@@ -6,9 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 metadata = Base.metadata
 
-class Item(Base):
-    __tablename__ = "items"
+class Transaction(Base):
+    __tablename__ = "transactions"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(5))
+    transaction_id: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100))
 
