@@ -3,7 +3,7 @@ VENV ?= venv
 SYS_PYTHON ?= python
 VENV_PYTHON ?= $(VENV)/bin/python
 
-$(VENV)/bin/python:
+create_$(VENV):
 	$(SYS_PYTHON) -m venv $(VENV)
 	chmod +x $(VENV)/bin/activate
 
@@ -19,7 +19,6 @@ run: activate_$(VENV)
 
 new_migration: activate_$(VENV)
 	alembic revision --autogenerate -m "new_migration"
-
 
 migrate: activate_$(VENV)
 	alembic upgrade head
