@@ -1,0 +1,54 @@
+from internal.databases.models import Transaction
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+
+
+async def get_all_transactions(async_session: async_sessionmaker[AsyncSession]):
+    async with async_session() as session:
+        statement = select(Transaction)
+
+        result = await session.execute(statement)
+
+        return result.scalars()
+
+
+async def add_transaction(async_session: async_sessionmaker[AsyncSession], transactions: Transaction):
+    async with async_session() as session:
+        session.add(transactions)
+        await session.commit()
+
+        return transactions
+
+
+async def get_transaction(async_session: async_sessionmaker[AsyncSession], transaction_id: str):
+    async with async_session() as session:
+        statement = select(Transaction).filter(Transaction.transaction_id == transaction_id)
+
+        result = await session.execute(statement)
+
+        return result.scalars().one()
+
+
+async def update_transaction(async_session: async_sessionmaker[AsyncSession], transaction_id: str, data):
+    async with async_session() as session:
+        statement = select(Transaction).filter(Transaction.transaction_id == transaction_id)
+
+        result = await session.execute(statement)
+
+        transactions = result.scalars().one()
+
+        transactions.transaction_type = data["transaction_type"]
+        transactions.transaction_value = data["transaction_value"]
+        transactions.transaction_date = data["transaction_date"]
+        transactions.transaction_description = data["transaction_description"]
+        transactions.category_id = data["category_id"]
+
+        await session.commit()
+
+    return transactions
+
+
+async def delete_transaction(async_session: async_sessionmaker[AsyncSession], transactions: Transaction):
+    async with async_session() as session:
+        await session.delete(transactions)
+        await session.commit()
