@@ -1,7 +1,9 @@
 from internal.logger import logger
 from internal.config.config import config
+from internal.application.dependencies import handlers
 from fastapi import FastAPI, Request, Depends
 from contextlib import asynccontextmanager
+
 
 
 # OS signals handling
@@ -16,8 +18,16 @@ async def lifespan(app: FastAPI):
     resource.clear()
 
 
+# entry point
+app = FastAPI(lifespan=lifespan, docs_url='/docs')
 
-app = FastAPI(lifespan=lifespan)
+handlers(app)
+
+# root endpoint
+@app.get("/")
+async def root():
+    logger.info('Root endpoint accessed', service="Spending Tracker")
+    return {"message": resource.get("msg", "Resource not initialized")}
 
 #logging requests
 @app.middleware('http')
@@ -25,10 +35,3 @@ async def log_request_middleware(request: Request, call_next):
     response = await call_next(request)
     logger.info("Request completed",service="Spending Tracker")
     return response
-
-
-#main
-@app.get("/")
-async def root():
-    logger.info('Root endpoint accessed', service="Spending Tracker")
-    return {"message": resource.get("msg", "Resource not initialized")}
