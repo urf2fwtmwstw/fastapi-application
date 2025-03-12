@@ -1,4 +1,4 @@
-from internal.controllers import (categories, transactions)
+from internal.controllers import categories, transactions
 
 def handlers(app):
     app.include_router(categories.router, prefix="/api/v1/categories")
