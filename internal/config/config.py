@@ -1,4 +1,4 @@
-import yaml, logging
+import yaml
 from pydantic import BaseModel
 
 
@@ -8,32 +8,28 @@ def validate_config(config):
 
 # Load YAML config
 def yamlconfig():
-    with open('internal/config/config.yaml', 'r') as file:
+    with open('config.yaml', 'r') as file:
         conf = yaml.safe_load(file)
         validate_config(conf)
         return conf
 
-class Settings(BaseModel):
+class Database(BaseModel):
+    username: str = "postgres"
+    password: str = "password"
+    host: str = "localhost"
+    port: int = 5432
+    name: str = "SpendingTrackerDB"
+
+class Logger(BaseModel):
     log_level: str = "INFO"
-    database_username: str = "postgres"
-    database_password: str = "password"
-    database_host: str = "localhost"
-    database_port: int = 5432
-    database_name: str = "SpendingTrackerDB"
+
+class Settings(BaseModel):
+    logger: Logger
+    database: Database
 
     @property
     def DATABASE_URL(self):
-        return f"postgresql+asyncpg://{self.database_username}:{self.database_password}@{self.database_host}/{self.database_name}"
+        return f"postgresql+asyncpg://{self.database.username}:{self.database.password}@{self.database.host}/{self.database.name}"
 
-config = yamlconfig()
 
-settings = Settings(
-    log_level=config.get("log_level"),
-    database_username=config.get("database", {}).get("username"),
-    database_password=config.get("database", {}).get("password"),
-    database_host=config.get("database", {}).get("host"),
-    database_port=config.get("database", {}).get("port"),
-    database_name=config.get("database", {}).get("name"),
-)
-
-logging.basicConfig(level=settings.log_level)
+settings = Settings(**yamlconfig())

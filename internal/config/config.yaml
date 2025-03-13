@@ -1,4 +1,5 @@
-log_level: INFO
+logger:
+  log_level: INFO
 database:
   username: postgres
   password: password123
