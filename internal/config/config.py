@@ -15,17 +15,25 @@ def yamlconfig():
 
 class Settings(BaseModel):
     log_level: str = "INFO"
-    database_host: str = 'localhost'
+    database_username: str = "postgres"
+    database_password: str = "password"
+    database_host: str = "localhost"
     database_port: int = 5432
+    database_name: str = "SpendingTrackerDB"
+
+    @property
+    def DATABASE_URL(self):
+        return f"postgresql+asyncpg://{self.database_username}:{self.database_password}@{self.database_host}/{self.database_name}"
 
 config = yamlconfig()
 
 settings = Settings(
-    log_level=config.get("log_level", "INFO"),
-    database_host=config.get("database", {}).get("host", "localhost"),
-    database_port=config.get("database", {}).get("port", 5432)
+    log_level=config.get("log_level"),
+    database_username=config.get("database", {}).get("username"),
+    database_password=config.get("database", {}).get("password"),
+    database_host=config.get("database", {}).get("host"),
+    database_port=config.get("database", {}).get("port"),
+    database_name=config.get("database", {}).get("name"),
 )
 
 logging.basicConfig(level=settings.log_level)
-
-SQLALCHEMY_DATABASE_URL = f"postgresql+asyncpg://{config["database"]["username"]}:{config["database"]["password"]}@{config["database"]["host"]}/{config["database"]["name"]}"
