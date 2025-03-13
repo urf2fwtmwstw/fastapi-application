@@ -16,9 +16,12 @@ class TransactionTypes(enum.Enum):
     income = "income"
     expenses = "expenses"
 
-# class User(Base):
-#     __tablename__ = "users"
-#     user_id = Column(UUID(as_uuid=True), primary_key=True)
+class User(Base):
+    __tablename__ = "users"
+
+    user_id = Column(UUID(as_uuid=True), primary_key=True)
+    user_name = Column(String, unique=True)
+    hashed_password = Column(String)
 
 class Category(Base):
     __tablename__ = "categories"
@@ -27,7 +30,7 @@ class Category(Base):
     category_name = Column(String(50), nullable=False, unique=True)
     category_description = Column(String(200), nullable=False)
     category_type = Column(Enum(CategoryTypes), nullable=False)
-    # user_id = Column(ForeignKey("users.user_id"))
+    user_id = Column(ForeignKey("users.user_id"))
 
 
 class Transaction(Base):
@@ -39,5 +42,5 @@ class Transaction(Base):
     transaction_date = Column(DateTime(timezone=True), nullable=False)
     transaction_created = Column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now)
     transaction_description = Column(String(200))
-    #user_id = Column(ForeignKey("users.user_id"))
+    user_id = Column(ForeignKey("users.user_id"))
     category_id = Column(ForeignKey("categories.category_id"))
