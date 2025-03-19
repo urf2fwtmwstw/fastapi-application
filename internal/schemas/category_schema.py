@@ -27,7 +27,7 @@ class CategoryCreateUpdateModel(BaseModel):
         json_schema_extra={
             "example":{
                 "category_name": "category name",
-                "category_description": "description*",
+                "category_description": "description",
                 "category_type": "income",
             }
         }

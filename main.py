@@ -1,7 +1,7 @@
 from internal.logger import logger
 from internal.config.config import config
-from internal.application.dependencies import handlers
-from fastapi import FastAPI, Request, Depends
+from internal.application.routers import handlers
+from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
 
 
