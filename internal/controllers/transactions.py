@@ -1,3 +1,4 @@
+from internal.transactions.repository.transactions import TransactionsRepository
 from internal.services.transaction_service import TransactionService
 from internal.schemas.transaction_schema import TransactionModel, TransactionCreateUpdateModel
 from internal.databases.database import get_db
@@ -11,19 +12,22 @@ import uuid
 
 
 
-services = {}
+resources = {}
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
-    services["transaction_service"] = TransactionService()
+    resources["transaction_service"] = TransactionService(TransactionsRepository())
     yield
-    services.clear()
+    resources.clear()
 
 
 router = APIRouter(lifespan=lifespan)
 
 def get_transaction_service():
-    return services["transaction_service"]
+    transaction_service = resources.get("transaction_service", None)
+    if transaction_service is None:
+        raise ModuleNotFoundError('''"transaction_service" wasn't initialized''')
+    return transaction_service
 
 
 @router.get("", response_model=List[TransactionModel])

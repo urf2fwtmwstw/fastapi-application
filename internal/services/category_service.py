@@ -3,7 +3,7 @@ from internal.categories.repository.categories import CategoriesRepository
 
 
 class CategoryService:
-    def __init__(self, repo: CategoriesRepository = CategoriesRepository()):
+    def __init__(self, repo: CategoriesRepository):
         self.repo = repo
 
     async def get_categories(self, session):

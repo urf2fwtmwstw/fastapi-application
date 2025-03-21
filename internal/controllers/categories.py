@@ -1,3 +1,4 @@
+from internal.categories.repository.categories import CategoriesRepository
 from internal.schemas.category_schema import CategoryModel, CategoryCreateUpdateModel
 from internal.services.category_service import CategoryService
 from internal.databases.models import Category
@@ -11,19 +12,22 @@ import uuid
 
 
 
-services = {}
+resources = {}
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
-    services["category_service"] = CategoryService()
+    resources["category_service"] = CategoryService(CategoriesRepository())
     yield
-    services.clear()
+    resources.clear()
 
 
 router = APIRouter(lifespan=lifespan)
 
 def get_category_service():
-    return services["category_service"]
+    category_service = resources.get("category_service", None)
+    if category_service is None:
+        raise ModuleNotFoundError('''"category_service" wasn't initialized''')
+    return category_service
 
 
 @router.get("", response_model=List[CategoryModel])

@@ -3,7 +3,7 @@ from internal.transactions.repository.transactions import TransactionsRepository
 
 
 class TransactionService:
-    def __init__(self, repo: TransactionsRepository = TransactionsRepository()):
+    def __init__(self, repo: TransactionsRepository):
         self.repo = repo
 
     async def get_transactions(self, session):
