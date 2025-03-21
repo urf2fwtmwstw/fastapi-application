@@ -1,22 +1,24 @@
 from internal.transactions.repository.transactions import TransactionsRepository
 
 
-db = TransactionsRepository()
 
-class TransactionsService:
+class TransactionService:
+    def __init__(self, repo: TransactionsRepository = TransactionsRepository()):
+        self.repo = repo
+
     async def get_transactions(self, session):
-        transactions = await db.get_transactions(session)
+        transactions = await self.repo.get_transactions(session)
         return transactions
 
     async def add_transaction(self, session, new_transaction):
-        await db.add_transaction(session, new_transaction)
+        await self.repo.add_transaction(session, new_transaction)
 
     async def get_transaction(self, session, transaction_id):
-        transaction = await db.get_transaction(session, transaction_id)
+        transaction = await self.repo.get_transaction(session, transaction_id)
         return transaction
 
     async def update_transaction(self, session, transaction_id, data):
-        await db.update_transaction(session, transaction_id, data)
+        await self.repo.update_transaction(session, transaction_id, data)
 
     async def delete_transaction(self, session, transaction):
-        await db.delete_transaction(session, transaction)
+        await self.repo.delete_transaction(session, transaction)
