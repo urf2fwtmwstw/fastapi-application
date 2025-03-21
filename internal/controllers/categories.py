@@ -16,7 +16,8 @@ resources = {}
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
-    resources["category_service"] = CategoryService(CategoriesRepository())
+    category_repository = CategoriesRepository()
+    resources["category_service"] = CategoryService(category_repository)
     yield
     resources.clear()
 
@@ -26,7 +27,7 @@ router = APIRouter(lifespan=lifespan)
 def get_category_service():
     category_service = resources.get("category_service", None)
     if category_service is None:
-        raise ModuleNotFoundError('''"category_service" wasn't initialized''')
+        raise ModuleNotFoundError('"category_service" was not initialized')
     return category_service
 
 

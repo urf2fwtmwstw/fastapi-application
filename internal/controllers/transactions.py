@@ -16,7 +16,8 @@ resources = {}
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
-    resources["transaction_service"] = TransactionService(TransactionsRepository())
+    transaction_repository = TransactionsRepository()
+    resources["transaction_service"] = TransactionService(transaction_repository)
     yield
     resources.clear()
 
@@ -26,7 +27,7 @@ router = APIRouter(lifespan=lifespan)
 def get_transaction_service():
     transaction_service = resources.get("transaction_service", None)
     if transaction_service is None:
-        raise ModuleNotFoundError('''"transaction_service" wasn't initialized''')
+        raise ModuleNotFoundError('"transaction_service" was not initialized')
     return transaction_service
 
 
