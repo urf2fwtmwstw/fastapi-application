@@ -1,50 +1,87 @@
-from internal.services.schemas.category_schema import CategoryModel, CategoryCreateUpdateModel
-from internal.databases.database import session
+from internal.categories.repository.categories import CategoriesRepository
+from internal.schemas.category_schema import CategoryModel, CategoryCreateUpdateModel
+from internal.services.category_service import CategoryService
 from internal.databases.models import Category
-from internal.categories.repository.categories import Repository
-from fastapi import APIRouter
-from typing import List
+from internal.databases.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from fastapi import APIRouter, Depends
+from contextlib import asynccontextmanager
+from typing import List, Annotated
 from http import HTTPStatus
 import uuid
 
 
-router = APIRouter()
+
+resources = {}
+
+@asynccontextmanager
+async def lifespan(router: APIRouter):
+    category_repository = CategoriesRepository()
+    resources["category_service"] = CategoryService(category_repository)
+    yield
+    resources.clear()
+
+
+router = APIRouter(lifespan=lifespan)
+
+def get_category_service():
+    category_service = resources.get("category_service", None)
+    if category_service is None:
+        raise ModuleNotFoundError('"category_service" was not initialized')
+    return category_service
+
 
 @router.get("", response_model=List[CategoryModel])
-async def get_categories():
-    categories = await Repository().get_all_categories(session)
+async def get_all_categories(
+        service: Annotated[CategoryService, Depends(get_category_service)],
+        db: Annotated[async_sessionmaker[AsyncSession],Depends(get_db)],
+):
+    categories = await service.get_categories(db)
     return categories
 
 @router.post("", status_code=HTTPStatus.CREATED)
-async def create_category(category_data:CategoryCreateUpdateModel):
+async def create_new_category(
+        category_data:CategoryCreateUpdateModel,
+        service: Annotated[CategoryService, Depends(get_category_service)],
+        db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+):
     new_category = Category(
         category_id=uuid.uuid4(),
         category_name=category_data.category_name,
         category_description=category_data.category_description,
         category_type=category_data.category_type,
     )
-    category = await Repository().add_category(session, new_category)
-    return category
+    await service.add_category(db, new_category)
 
 @router.get("/{category_id}")
-async def show_category(category_id):
-    category = await Repository().get_category(session, category_id)
+async def show_category(
+        category_id: str,
+        service: Annotated[CategoryService, Depends(get_category_service)],
+        db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+):
+    category = await service.get_category(db, category_id)
     return category
 
 @router.put("/{category_id}")
-async def edit_category(category_id: str, data: CategoryCreateUpdateModel):
-    category = await Repository().get_category(session, category_id)
-    await Repository().update_category(session, category_id, data={
+async def edit_category(
+        category_id: str,
+        data: CategoryCreateUpdateModel,
+        service: Annotated[CategoryService, Depends(get_category_service)],
+        db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+):
+    await service.update_category(db, category_id, data={
         "category_name": data.category_name,
         "category_description": data.category_description,
         "category_type": data.category_type,
     })
+    category = await service.get_category(db, category_id)
     return category
 
 @router.delete("/{category_id}", status_code=HTTPStatus.NO_CONTENT)
-async def delete_category(category_id):
-    category = await Repository().get_category(session, category_id)
-
-    result = await Repository().delete_category(session, category)
-
-    return result
+async def delete_category(
+        category_id: str,
+        service: Annotated[CategoryService, Depends(get_category_service)],
+        db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+):
+    category = await service.get_category(db, category_id)
+    await service.delete_category(db, category)

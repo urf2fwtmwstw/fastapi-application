@@ -3,8 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 
-class Repository:
-    async def get_all_categories(self, async_session: async_sessionmaker[AsyncSession]):
+class CategoriesRepository:
+    async def get_categories(self, async_session: async_sessionmaker[AsyncSession]):
         async with async_session() as session:
             statement = select(Category)
 
@@ -17,8 +17,6 @@ class Repository:
         async with async_session() as session:
             session.add(categories)
             await session.commit()
-
-            return categories
 
 
     async def get_category(self, async_session: async_sessionmaker[AsyncSession], category_id: str):
@@ -43,8 +41,6 @@ class Repository:
             categories.category_type = data["category_type"]
 
             await session.commit()
-
-        return categories
 
 
     async def delete_category(self, async_session: async_sessionmaker[AsyncSession], categories: Category):

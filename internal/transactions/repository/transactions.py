@@ -3,8 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 
-class Repository:
-    async def get_all_transactions(self, async_session: async_sessionmaker[AsyncSession]):
+class TransactionsRepository:
+    async def get_transactions(self, async_session: async_sessionmaker[AsyncSession]):
         async with async_session() as session:
             statement = select(Transaction)
 
@@ -17,8 +17,6 @@ class Repository:
         async with async_session() as session:
             session.add(transactions)
             await session.commit()
-
-            return transactions
 
 
     async def get_transaction(self, async_session: async_sessionmaker[AsyncSession], transaction_id: str):
@@ -46,12 +44,8 @@ class Repository:
 
             await session.commit()
 
-        return transactions
-
 
     async def delete_transaction(self, async_session: async_sessionmaker[AsyncSession], transactions: Transaction):
         async with async_session() as session:
             await session.delete(transactions)
             await session.commit()
-
-repo = Repository()
