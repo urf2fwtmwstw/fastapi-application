@@ -1,6 +1,10 @@
 import yaml
 from pydantic import BaseModel
+from pathlib import Path
 
+
+
+BASE_DIR = Path(__file__).parent.parent.parent
 
 def validate_config(config):
     if not isinstance(config.get("database", {}).get("name"), str):
@@ -8,10 +12,16 @@ def validate_config(config):
 
 # Load YAML config
 def yamlconfig():
-    with open('config.yaml', 'r') as file:
+    with open(BASE_DIR / "internal" / "config" / "config.yaml", 'r') as file:
         conf = yaml.safe_load(file)
         validate_config(conf)
         return conf
+
+class AuthJWT(BaseModel):
+    private_key_path: Path = BASE_DIR / "certs" / "private.pem"
+    public_key_path: Path = BASE_DIR / "certs" / "public.pem"
+    algorithm: str = "RS256"
+    access_token_expire_minutes: int = 15
 
 class Database(BaseModel):
     username: str = "postgres"
@@ -26,6 +36,7 @@ class Logger(BaseModel):
 class Settings(BaseModel):
     logger: Logger
     database: Database
+    auth_jwt: AuthJWT = AuthJWT()
 
     @property
     def DATABASE_URL(self):
