@@ -5,3 +5,7 @@ sqlalchemy
 alembic
 pydantic
 asyncpg
+pyjwt[crypto]
+bcrypt
+python-multipart
+pytz
