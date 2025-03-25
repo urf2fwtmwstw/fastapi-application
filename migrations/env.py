@@ -1,5 +1,5 @@
 import asyncio
-from config.config import SQLALCHEMY_DATABASE_URL
+from config.config import settings
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -17,7 +17,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
