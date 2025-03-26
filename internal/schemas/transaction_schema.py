@@ -14,6 +14,7 @@ class TransactionModel(BaseModel):
     transaction_date: datetime
     transaction_created: datetime
     transaction_description: str | None
+    user_id: UUID4
     category_id: UUID4
 
     model_config = ConfigDict(

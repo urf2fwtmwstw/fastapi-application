@@ -1,5 +1,7 @@
 from internal.categories.repository.categories import CategoriesRepository
+from internal.controllers.auth import get_auth_user_info
 from internal.schemas.category_schema import CategoryModel, CategoryCreateUpdateModel
+from internal.schemas.user_schema import UserModel
 from internal.services.category_service import CategoryService
 from internal.databases.models import Category
 from internal.databases.database import get_db
@@ -44,12 +46,14 @@ async def create_new_category(
         category_data:CategoryCreateUpdateModel,
         service: Annotated[CategoryService, Depends(get_category_service)],
         db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+        user: UserModel = Depends(get_auth_user_info),
 ):
     new_category = Category(
         category_id=uuid.uuid4(),
         category_name=category_data.category_name,
         category_description=category_data.category_description,
         category_type=category_data.category_type,
+        user_id=user.user_id,
     )
     await service.add_category(db, new_category)
 

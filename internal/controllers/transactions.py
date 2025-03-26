@@ -1,6 +1,8 @@
 from internal.transactions.repository.transactions import TransactionsRepository
+from internal.controllers.auth import get_auth_user_info
 from internal.services.transaction_service import TransactionService
 from internal.schemas.transaction_schema import TransactionModel, TransactionCreateUpdateModel
+from internal.schemas.user_schema import UserModel
 from internal.databases.database import get_db
 from internal.databases.models import Transaction
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -44,6 +46,7 @@ async def create_transaction(
         transaction_data:TransactionCreateUpdateModel,
         service: Annotated[TransactionService, Depends(get_transaction_service)],
         db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+        user: UserModel = Depends(get_auth_user_info),
 ):
     new_transaction = Transaction(
         transaction_id=uuid.uuid4(),
@@ -51,6 +54,7 @@ async def create_transaction(
         transaction_value=transaction_data.transaction_value,
         transaction_date=transaction_data.transaction_date,
         transaction_description=transaction_data.transaction_description,
+        user_id=user.user_id,
         category_id=transaction_data.category_id,
     )
     await service.add_transaction(db, new_transaction)

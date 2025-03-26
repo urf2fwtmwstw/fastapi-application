@@ -12,6 +12,7 @@ class CategoryModel(BaseModel):
     category_name: str
     category_description: str | None
     category_type: CategoryType
+    user_id: UUID4
 
     model_config = ConfigDict(
         from_attributes=True,
