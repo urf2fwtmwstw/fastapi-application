@@ -1,8 +1,6 @@
 from internal.config.config import settings
 from datetime import datetime, timedelta
-import jwt
-import bcrypt
-import pytz
+import jwt, bcrypt, pytz
 
 
 

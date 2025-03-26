@@ -2,7 +2,7 @@ from internal.auth import utils
 from internal.auth.repository.users import UsersRepository
 from internal.databases.database import get_db
 from internal.databases.models import User
-from internal.schemas.user_schema import UserModel, UserCreateUpdateModel
+from internal.schemas.user_schema import UserModel, UserCreateModel, UserUpdateModel
 from internal.schemas.token_schema import TokenInfo
 from internal.services.user_service import UserService
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -58,7 +58,7 @@ async def get_auth_user_info(
     try:
         payload = utils.decode_jwt(token=token)
     except InvalidTokenError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     username: str | None = payload.get("username")
 
@@ -69,7 +69,7 @@ async def get_auth_user_info(
 
 @router.post("/signup", status_code=HTTPStatus.CREATED, response_model=TokenInfo)
 async def auth_new_user_issue_jwt(
-        user_data: UserCreateUpdateModel,
+        user_data: UserCreateModel,
         service: Annotated[UserService, Depends(get_user_service)],
         db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
 ):
@@ -102,3 +102,23 @@ def view_auth_user_info(user: UserModel = Depends(get_auth_user_info)):
         "user_id": user.user_id,
         "username": user.username,
     }
+
+@router.patch("/users/{user_id}", response_model=TokenInfo)
+async def update_auth_user_data(
+        user_data: UserUpdateModel,
+        user_id: str,
+        service: Annotated[UserService, Depends(get_user_service)],
+        db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+):
+    await service.update_user(db, user_id, data={
+        "username": user_data.username,
+        "old_password": user_data.old_password,
+        "new_password": str(utils.hash_password(user_data.new_password)),
+    })
+    jwt_payload = {
+        "sub": user_id,
+        "username": user_data.username,
+    }
+    token = utils.encode_jwt(jwt_payload)
+
+    return TokenInfo(access_token=token, token_type="Bearer")

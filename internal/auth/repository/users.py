@@ -21,14 +21,14 @@ class UsersRepository:
 
     async def update_user(self, async_session: async_sessionmaker[AsyncSession], user_id: str, data):
         async with async_session() as session:
-            statement = select(User).filter(User.user_id == user_id)
+            statement = select(User).filter(User.user_id == user_id and User.hashed_password == data["old_password"])
 
             result = await session.execute(statement)
 
             categories = result.scalars().one()
 
             categories.username = data["username"]
-            categories.hashed_password = data["hashed_password"]
+            categories.hashed_password = data["new_password"]
 
             await session.commit()
 
