@@ -15,6 +15,3 @@ class UserService:
 
     async def update_user(self, session, user_id, data):
         await self.repo.update_user(session, user_id, data)
-
-    async def delete_user(self, session, user):
-        await self.repo.delete_user(session, user)

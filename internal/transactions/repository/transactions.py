@@ -1,4 +1,5 @@
 from internal.databases.models import Transaction
+from internal.schemas.transaction_schema import TransactionCreateUpdateModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -28,7 +29,7 @@ class TransactionsRepository:
             return result.scalars().one()
 
 
-    async def update_transaction(self, async_session: async_sessionmaker[AsyncSession], transaction_id: str, data):
+    async def update_transaction(self, async_session: async_sessionmaker[AsyncSession], transaction_id: str, data: TransactionCreateUpdateModel):
         async with async_session() as session:
             statement = select(Transaction).filter(Transaction.transaction_id == transaction_id)
 

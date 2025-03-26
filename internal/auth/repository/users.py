@@ -1,4 +1,5 @@
 from internal.databases.models import User
+from internal.schemas.user_schema import UserUpdateModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -19,7 +20,7 @@ class UsersRepository:
             return result.scalars().one()
 
 
-    async def update_user(self, async_session: async_sessionmaker[AsyncSession], user_id: str, data):
+    async def update_user(self, async_session: async_sessionmaker[AsyncSession], user_id: str, data: UserUpdateModel):
         async with async_session() as session:
             statement = select(User).filter(User.user_id == user_id and User.hashed_password == data["old_password"])
 
@@ -30,10 +31,4 @@ class UsersRepository:
             categories.username = data["username"]
             categories.hashed_password = data["new_password"]
 
-            await session.commit()
-
-
-    async def delete_user(self, async_session: async_sessionmaker[AsyncSession], users: User):
-        async with async_session() as session:
-            await session.delete(users)
             await session.commit()
