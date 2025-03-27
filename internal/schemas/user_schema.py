@@ -1,6 +1,7 @@
 from typing import Annotated
-from annotated_types import MinLen, MaxLen
-from pydantic import BaseModel, ConfigDict, UUID4
+
+from annotated_types import MaxLen, MinLen
+from pydantic import UUID4, BaseModel, ConfigDict
 
 
 class UserModel(BaseModel):
@@ -9,7 +10,6 @@ class UserModel(BaseModel):
     user_id: UUID4
     username: str
     password: str
-
 
 class UserCreateModel(BaseModel):
     username: Annotated[str, MinLen(3), MaxLen(20)]

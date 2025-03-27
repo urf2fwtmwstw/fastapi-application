@@ -1,6 +1,6 @@
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, UUID4
 
+from pydantic import UUID4, BaseModel, ConfigDict
 
 
 class CategoryType(str, Enum):

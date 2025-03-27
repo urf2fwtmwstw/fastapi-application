@@ -1,5 +1,4 @@
-from internal.controllers import categories, transactions, auth
-
+from internal.controllers import auth, categories, transactions
 
 
 def handlers(app):

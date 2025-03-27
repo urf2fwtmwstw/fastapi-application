@@ -1,18 +1,19 @@
+import uuid
+from contextlib import asynccontextmanager
+from http import HTTPStatus
+from typing import Annotated, List
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from internal.categories.repository.categories import CategoriesRepository
 from internal.controllers.auth import get_auth_user_info
-from internal.schemas.category_schema import CategoryModel, CategoryCreateUpdateModel
+from internal.databases.database import get_db
+from internal.databases.models import Category
+from internal.schemas.category_schema import (CategoryCreateUpdateModel,
+                                              CategoryModel)
 from internal.schemas.user_schema import UserModel
 from internal.services.category_service import CategoryService
-from internal.databases.models import Category
-from internal.databases.database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from fastapi import APIRouter, Depends
-from contextlib import asynccontextmanager
-from typing import List, Annotated
-from http import HTTPStatus
-import uuid
-
-
 
 resources = {}
 

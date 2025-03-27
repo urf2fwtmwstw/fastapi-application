@@ -1,7 +1,6 @@
 from internal.auth.repository.users import UsersRepository
 
 
-
 class UserService:
     def __init__(self, repo: UsersRepository):
         self.repo = repo

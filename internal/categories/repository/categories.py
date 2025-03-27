@@ -1,7 +1,8 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from internal.databases.models import Category
 from internal.schemas.category_schema import CategoryCreateUpdateModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 
 class CategoriesRepository:

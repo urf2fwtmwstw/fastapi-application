@@ -1,8 +1,7 @@
-import yaml
-from pydantic import BaseModel
 from pathlib import Path
 
-
+import yaml
+from pydantic import BaseModel
 
 BASE_DIR = Path(__file__).parent.parent.parent
 

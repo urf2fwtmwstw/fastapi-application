@@ -1,20 +1,21 @@
+import uuid
+from contextlib import asynccontextmanager
+from http import HTTPStatus
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jwt.exceptions import InvalidTokenError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from internal.auth import utils
 from internal.auth.repository.users import UsersRepository
 from internal.databases.database import get_db
 from internal.databases.models import User
-from internal.schemas.user_schema import UserModel, UserCreateModel, UserUpdateModel
 from internal.schemas.token_schema import TokenInfo
+from internal.schemas.user_schema import (UserCreateModel, UserModel,
+                                          UserUpdateModel)
 from internal.services.user_service import UserService
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
-from contextlib import asynccontextmanager
-from fastapi import APIRouter, Depends, Form, HTTPException, status
-from typing import Annotated
-from http import HTTPStatus
-import uuid
-
-
 
 resources = {}
 

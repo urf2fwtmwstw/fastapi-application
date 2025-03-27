@@ -1,7 +1,8 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from internal.databases.models import Transaction
 from internal.schemas.transaction_schema import TransactionCreateUpdateModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 
 class TransactionsRepository:

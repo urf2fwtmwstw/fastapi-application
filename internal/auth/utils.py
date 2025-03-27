@@ -1,7 +1,10 @@
-from internal.config.config import settings
 from datetime import datetime, timedelta
-import jwt, bcrypt, pytz
 
+import bcrypt
+import jwt
+import pytz
+
+from internal.config.config import settings
 
 
 def encode_jwt(

@@ -1,7 +1,8 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from internal.databases.models import User
 from internal.schemas.user_schema import UserUpdateModel
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 
 class UsersRepository:
