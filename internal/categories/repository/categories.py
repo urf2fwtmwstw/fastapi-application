@@ -1,6 +1,8 @@
-from internal.databases.models import Category
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from internal.databases.models import Category
+from internal.schemas.category_schema import CategoryCreateUpdateModel
 
 
 class CategoriesRepository:
@@ -28,7 +30,7 @@ class CategoriesRepository:
             return result.scalars().one()
 
 
-    async def update_category(self, async_session: async_sessionmaker[AsyncSession], category_id: str, data):
+    async def update_category(self, async_session: async_sessionmaker[AsyncSession], category_id: str, data: CategoryCreateUpdateModel):
         async with async_session() as session:
             statement = select(Category).filter(Category.category_id == category_id)
 

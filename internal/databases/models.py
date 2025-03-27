@@ -1,8 +1,9 @@
-import enum
 import datetime
+import enum
+
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import  DeclarativeBase, relationship
-from sqlalchemy import Column, ForeignKey, Enum, Numeric, String, DateTime
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
@@ -20,8 +21,8 @@ class User(Base):
     __tablename__ = "users"
 
     user_id = Column(UUID(as_uuid=True), primary_key=True)
-    user_name = Column(String, unique=True)
-    hashed_password = Column(String)
+    username = Column(String, unique=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
 
 class Category(Base):
     __tablename__ = "categories"

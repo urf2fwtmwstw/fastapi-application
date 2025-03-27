@@ -1,5 +1,5 @@
-from internal.transactions.repository.transactions import TransactionsRepository
-
+from internal.transactions.repository.transactions import \
+    TransactionsRepository
 
 
 class TransactionService:

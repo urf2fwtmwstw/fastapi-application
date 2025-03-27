@@ -1,6 +1,8 @@
-from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, UUID4
+from enum import Enum
+
+from pydantic import UUID4, BaseModel, ConfigDict
+
 
 class TypeEnum(str, Enum):
     income = "income"
@@ -14,6 +16,7 @@ class TransactionModel(BaseModel):
     transaction_date: datetime
     transaction_created: datetime
     transaction_description: str | None
+    user_id: UUID4
     category_id: UUID4
 
     model_config = ConfigDict(

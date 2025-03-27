@@ -1,7 +1,6 @@
 from internal.categories.repository.categories import CategoriesRepository
 
 
-
 class CategoryService:
     def __init__(self, repo: CategoriesRepository):
         self.repo = repo
