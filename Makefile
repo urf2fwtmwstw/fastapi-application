@@ -28,3 +28,6 @@ new_migration: activate_$(VENV)
 
 migrate: activate_$(VENV)
 	alembic upgrade head
+
+lint: activate_$(VENV)
+	ruff check .
