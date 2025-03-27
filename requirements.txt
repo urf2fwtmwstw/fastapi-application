@@ -9,3 +9,4 @@ pyjwt[crypto]
 bcrypt
 python-multipart
 pytz
+ruff
