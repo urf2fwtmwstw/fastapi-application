@@ -5,8 +5,8 @@ class CategoryService:
     def __init__(self, repo: CategoriesRepository):
         self.repo = repo
 
-    async def get_categories(self, session, user_id):
-        categories = await self.repo.get_categories(session, user_id)
+    async def get_categories(self, session):
+        categories = await self.repo.get_categories(session)
         return categories
 
     async def add_category(self, session, new_category):

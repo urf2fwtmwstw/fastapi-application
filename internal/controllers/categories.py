@@ -38,9 +38,8 @@ def get_category_service():
 async def get_all_categories(
         service: Annotated[CategoryService, Depends(get_category_service)],
         db: Annotated[async_sessionmaker[AsyncSession],Depends(get_db)],
-        user: UserModel = Depends(get_auth_user_info),
 ):
-    categories = await service.get_categories(db, user.user_id)
+    categories = await service.get_categories(db)
     return categories
 
 @router.post("", status_code=HTTPStatus.CREATED)

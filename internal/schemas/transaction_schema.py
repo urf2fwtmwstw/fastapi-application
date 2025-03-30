@@ -40,6 +40,7 @@ class TransactionCreateUpdateModel(BaseModel):
                 "transaction_date": "2032-04-23T10:20:30.400+02:30",
                 "transaction_description": "description",
                 "category_id": "2eaa06c3-f21e-497d-84bf-c5c41333dffe",
+
             }
         }
     )

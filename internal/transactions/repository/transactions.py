@@ -6,9 +6,9 @@ from internal.schemas.transaction_schema import TransactionCreateUpdateModel
 
 
 class TransactionsRepository:
-    async def get_transactions(self, async_session: async_sessionmaker[AsyncSession], user_id: str):
+    async def get_transactions(self, async_session: async_sessionmaker[AsyncSession]):
         async with async_session() as session:
-            statement = select(Transaction).filter(Transaction.user_id == user_id)
+            statement = select(Transaction)
 
             result = await session.execute(statement)
 

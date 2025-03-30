@@ -39,9 +39,8 @@ def get_transaction_service():
 async def get_all_transactions(
         service: Annotated[TransactionService, Depends(get_transaction_service)],
         db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-        user: UserModel = Depends(get_auth_user_info),
 ):
-    transactions = await service.get_transactions(db, user.user_id)
+    transactions = await service.get_transactions(db)
     return transactions
 
 @router.post("", status_code=HTTPStatus.CREATED)
