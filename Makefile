@@ -31,3 +31,7 @@ migrate: activate_$(VENV)
 
 lint: activate_$(VENV)
 	ruff check .
+
+test: activate_$(VENV)
+	export PYTHONPATH=$PYTHONPATH:.
+	pytest tests -v
