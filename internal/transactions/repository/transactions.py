@@ -1,12 +1,14 @@
-from internal.databases.models import Transaction
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from internal.databases.models import Transaction
+from internal.schemas.transaction_schema import TransactionCreateUpdateModel
 
 
 class TransactionsRepository:
-    async def get_transactions(self, async_session: async_sessionmaker[AsyncSession]):
+    async def get_transactions(self, async_session: async_sessionmaker[AsyncSession], user_id: str):
         async with async_session() as session:
-            statement = select(Transaction)
+            statement = select(Transaction).filter(Transaction.user_id == user_id)
 
             result = await session.execute(statement)
 
@@ -28,7 +30,7 @@ class TransactionsRepository:
             return result.scalars().one()
 
 
-    async def update_transaction(self, async_session: async_sessionmaker[AsyncSession], transaction_id: str, data):
+    async def update_transaction(self, async_session: async_sessionmaker[AsyncSession], transaction_id: str, data: TransactionCreateUpdateModel):
         async with async_session() as session:
             statement = select(Transaction).filter(Transaction.transaction_id == transaction_id)
 

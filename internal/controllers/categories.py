@@ -1,16 +1,19 @@
-from internal.categories.repository.categories import CategoriesRepository
-from internal.schemas.category_schema import CategoryModel, CategoryCreateUpdateModel
-from internal.services.category_service import CategoryService
-from internal.databases.models import Category
-from internal.databases.database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from fastapi import APIRouter, Depends
-from contextlib import asynccontextmanager
-from typing import List, Annotated
-from http import HTTPStatus
 import uuid
+from contextlib import asynccontextmanager
+from http import HTTPStatus
+from typing import Annotated, List
 
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from internal.categories.repository.categories import CategoriesRepository
+from internal.controllers.auth import get_auth_user_info
+from internal.databases.database import get_db
+from internal.databases.models import Category
+from internal.schemas.category_schema import (CategoryCreateUpdateModel,
+                                              CategoryModel)
+from internal.schemas.user_schema import UserModel
+from internal.services.category_service import CategoryService
 
 resources = {}
 
@@ -35,8 +38,9 @@ def get_category_service():
 async def get_all_categories(
         service: Annotated[CategoryService, Depends(get_category_service)],
         db: Annotated[async_sessionmaker[AsyncSession],Depends(get_db)],
+        user: UserModel = Depends(get_auth_user_info),
 ):
-    categories = await service.get_categories(db)
+    categories = await service.get_categories(db, user.user_id)
     return categories
 
 @router.post("", status_code=HTTPStatus.CREATED)
@@ -44,12 +48,14 @@ async def create_new_category(
         category_data:CategoryCreateUpdateModel,
         service: Annotated[CategoryService, Depends(get_category_service)],
         db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+        user: UserModel = Depends(get_auth_user_info),
 ):
     new_category = Category(
         category_id=uuid.uuid4(),
         category_name=category_data.category_name,
         category_description=category_data.category_description,
         category_type=category_data.category_type,
+        user_id=user.user_id,
     )
     await service.add_category(db, new_category)
 
