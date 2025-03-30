@@ -10,5 +10,4 @@ bcrypt
 python-multipart
 pytz
 ruff
-pytest
-yaml
+PyYAML
