@@ -6,8 +6,8 @@ class TransactionService:
     def __init__(self, repo: TransactionsRepository):
         self.repo = repo
 
-    async def get_transactions(self, session):
-        transactions = await self.repo.get_transactions(session)
+    async def get_transactions(self, session, user_id):
+        transactions = await self.repo.get_transactions(session, user_id)
         return transactions
 
     async def add_transaction(self, session, new_transaction):
