@@ -6,9 +6,9 @@ from internal.schemas.category_schema import CategoryCreateUpdateModel
 
 
 class CategoriesRepository:
-    async def get_categories(self, async_session: async_sessionmaker[AsyncSession]):
+    async def get_categories(self, async_session: async_sessionmaker[AsyncSession], user_id: str):
         async with async_session() as session:
-            statement = select(Category)
+            statement = select(Category).filter(Category.user_id == user_id)
 
             result = await session.execute(statement)
 
