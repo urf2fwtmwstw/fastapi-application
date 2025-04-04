@@ -5,7 +5,6 @@ from internal.application.routers import handlers
 from main import app
 
 
-
 @pytest.fixture(scope="session")
 def client():
     handlers(app)
