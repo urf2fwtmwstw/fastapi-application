@@ -12,6 +12,7 @@ class JsonFormatter(Formatter):
 
     def format(self, record: LogRecord):
         json_record = {}
+        json_record["log_level"] = settings.logger.log_level
         json_record["timestamp"] = str(datetime.now())
         json_record["message"] = record.getMessage()
         if "req" in record.__dict__:
