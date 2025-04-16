@@ -66,7 +66,7 @@ class CategoriesRepository:
         async_session: async_sessionmaker[AsyncSession],
         category_id: str,
         data: CategoryCreateUpdateModel,
-    ) -> None:
+    ) -> CategoryModel:
         async with async_session() as session:
             statement = (
                 update(Category)
@@ -78,8 +78,17 @@ class CategoriesRepository:
                 )
                 .returning(Category)
             )
-            await session.execute(statement)
+            result = await session.execute(statement)
             await session.commit()
+            category_model: Category = result.scalars().one()
+            category_schema = CategoryModel(
+                category_id=category_model.category_id,
+                category_name=category_model.category_name,
+                category_description=category_model.category_description,
+                category_type=category_model.category_type,
+                user_id=category_model.user_id,
+            )
+            return category_schema
 
     @staticmethod
     async def delete_category(

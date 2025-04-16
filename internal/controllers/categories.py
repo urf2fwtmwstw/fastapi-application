@@ -70,8 +70,7 @@ async def edit_category(
     service: Annotated[CategoryService, Depends(get_category_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
 ) -> CategoryModel:
-    await service.update_category(db, category_id, data)
-    category: CategoryModel = await service.get_category(db, category_id)
+    category: CategoryModel = await service.update_category(db, category_id, data)
     return category
 
 

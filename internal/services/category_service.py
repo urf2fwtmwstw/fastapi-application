@@ -35,8 +35,8 @@ class CategoryService:
         session: async_sessionmaker[AsyncSession],
         category_id: str,
         data: CategoryCreateUpdateModel,
-    ) -> None:
-        await self.repo.update_category(session, category_id, data)
+    ) -> CategoryModel:
+        return await self.repo.update_category(session, category_id, data)
 
     async def delete_category(
         self, session: async_sessionmaker[AsyncSession], category_id: str

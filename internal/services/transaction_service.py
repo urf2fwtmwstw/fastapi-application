@@ -40,8 +40,8 @@ class TransactionService:
         session: async_sessionmaker[AsyncSession],
         transaction_id: str,
         data: TransactionCreateUpdateModel,
-    ) -> None:
-        await self.repo.update_transaction(session, transaction_id, data)
+    ) -> TransactionModel:
+        return await self.repo.update_transaction(session, transaction_id, data)
 
     async def delete_transaction(
         self, session: async_sessionmaker[AsyncSession], transaction_id: str

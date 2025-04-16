@@ -75,8 +75,7 @@ async def edit_transaction(
     data: TransactionCreateUpdateModel,
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
 ) -> TransactionModel:
-    await service.update_transaction(db, transaction_id, data)
-    transaction: TransactionModel = await service.get_transaction(db, transaction_id)
+    transaction: TransactionModel = await service.update_transaction(db, transaction_id, data)
     return transaction
 
 

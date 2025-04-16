@@ -79,7 +79,7 @@ class TransactionsRepository:
         async_session: async_sessionmaker[AsyncSession],
         transaction_id: str,
         data: TransactionCreateUpdateModel,
-    ) -> None:
+    ) -> TransactionModel:
         async with async_session() as session:
             statement = (
                 update(Transaction)
@@ -90,10 +90,22 @@ class TransactionsRepository:
                     transaction_date=data.transaction_date,
                     transaction_description=data.transaction_description,
                     category_id=data.category_id,
-                )
+                ).returning(Transaction)
             )
-            await session.execute(statement)
+            result = await session.execute(statement)
             await session.commit()
+            transaction_model: Transaction = result.scalars().one()
+            transaction_schema = TransactionModel(
+                transaction_id=transaction_model.transaction_id,
+                transaction_type=transaction_model.transaction_type,
+                transaction_value=transaction_model.transaction_value,
+                transaction_date=transaction_model.transaction_date,
+                transaction_created=transaction_model.transaction_created,
+                transaction_description=transaction_model.transaction_description,
+                user_id=transaction_model.user_id,
+                category_id=transaction_model.category_id,
+            )
+            return transaction_schema
 
     @staticmethod
     async def delete_transaction(
