@@ -7,6 +7,7 @@ class CategoryType(str, Enum):
     income = "income"
     expenses = "expenses"
 
+
 class CategoryModel(BaseModel):
     category_id: UUID4
     category_name: str
@@ -18,6 +19,7 @@ class CategoryModel(BaseModel):
         from_attributes=True,
     )
 
+
 class CategoryCreateUpdateModel(BaseModel):
     category_name: str
     category_description: str | None
@@ -26,10 +28,10 @@ class CategoryCreateUpdateModel(BaseModel):
     model_config = ConfigDict(
         from_attributes=True,
         json_schema_extra={
-            "example":{
+            "example": {
                 "category_name": "category name",
                 "category_description": "description",
                 "category_type": "income",
             }
-        }
+        },
     )

@@ -1,6 +1,6 @@
-from datetime import datetime
 import json
 import logging
+from datetime import datetime
 from logging import Formatter, LogRecord
 
 from internal.config.config import settings
@@ -22,6 +22,7 @@ class JsonFormatter(Formatter):
         if record.levelno == logging.ERROR and record.exc_info:
             json_record["error"] = self.formatException(record.exc_info)
         return json.dumps(json_record)
+
 
 logger = logging.root
 handler = logging.StreamHandler()

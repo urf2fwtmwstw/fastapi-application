@@ -3,10 +3,9 @@ from logging.config import fileConfig
 
 from alembic import context
 from config.config import settings
+from databases import models
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
-
-from databases import models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -45,10 +44,12 @@ def run_migrations_online():
     else:
         do_run_migrations(connectable)
 
+
 async def run_async_migrations(connectable):
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()
+
 
 def do_run_migrations(connection):
     context.configure(
@@ -58,5 +59,6 @@ def do_run_migrations(connection):
     )
     with context.begin_transaction():
         context.run_migrations()
+
 
 run_migrations_online()

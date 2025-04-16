@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from tests.utils import authorize, generate_user, get_user_id
 
 
@@ -7,18 +8,21 @@ def test_registration(client: TestClient) -> None:
     assert response.status_code == 201
     assert response.json()["access_token"] is not None
 
+
 def test_authentication(client: TestClient, registered_test_user_data: dict) -> None:
     response = client.post("/api/v1/signin", data=registered_test_user_data)
     assert response.status_code == 200
     assert response.json()["access_token"] is not None
 
+
 def test_verification(client: TestClient, registered_test_user_data: dict) -> None:
     token: dict = authorize(client, registered_test_user_data)
     response = client.get(
         "/api/v1/verify",
-        headers={"Authorization": f"{token["token_type"]} {token["access_token"]}"}
+        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
     )
     assert response.status_code == 200
+
 
 def test_edit_user(client: TestClient, registered_test_user_data: dict) -> None:
     new_user_data: dict = generate_user()

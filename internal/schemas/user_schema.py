@@ -11,9 +11,11 @@ class UserModel(BaseModel):
     username: str
     password: str
 
+
 class UserCreateModel(BaseModel):
     username: Annotated[str, MinLen(3), MaxLen(20)]
     password: str
+
 
 class UserUpdateModel(BaseModel):
     username: Annotated[str, MinLen(3), MaxLen(20)]
