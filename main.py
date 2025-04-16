@@ -5,9 +5,9 @@ from fastapi import FastAPI
 from internal.application.routers import handlers
 from internal.logger.log_middleware import LogMiddleware
 
-
 # OS signals handling
 resource = {}
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,10 +17,12 @@ async def lifespan(app: FastAPI):
     print("Cleaning up resources...")
     resource.clear()
 
+
 # entry point
-app = FastAPI(lifespan=lifespan, docs_url='/docs')
+app = FastAPI(lifespan=lifespan, docs_url="/docs")
 app.add_middleware(LogMiddleware)
 handlers(app)
+
 
 # root endpoint
 @app.get("/")
