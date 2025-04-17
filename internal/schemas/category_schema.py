@@ -8,7 +8,7 @@ class CategoryType(str, Enum):
     expenses = "expenses"
 
 
-class CategoryModel(BaseModel):
+class CategorySchema(BaseModel):
     category_id: UUID4
     category_name: str
     category_description: str | None
@@ -20,7 +20,7 @@ class CategoryModel(BaseModel):
     )
 
 
-class CategoryCreateUpdateModel(BaseModel):
+class CategoryCreateUpdateSchema(BaseModel):
     category_name: str
     category_description: str | None
     category_type: CategoryType

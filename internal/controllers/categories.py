@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from internal.categories.repository.categories import CategoriesRepository
 from internal.controllers.auth import get_auth_user_info
 from internal.databases.database import get_db
-from internal.schemas.category_schema import CategoryCreateUpdateModel, CategoryModel
-from internal.schemas.user_schema import UserModel
+from internal.schemas.category_schema import CategoryCreateUpdateSchema, CategorySchema
+from internal.schemas.user_schema import UserSchema
 from internal.services.category_service import CategoryService
 
 resources = {}
@@ -17,8 +17,8 @@ resources = {}
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
-    category_repository = CategoriesRepository()
-    resources["category_service"] = CategoryService(category_repository)
+    resources["category_repository"] = CategoriesRepository()
+    resources["category_service"] = CategoryService(resources["category_repository"])
     yield
     resources.clear()
 
@@ -33,22 +33,22 @@ def get_category_service():
     return category_service
 
 
-@router.get("", response_model=List[CategoryModel])
+@router.get("", response_model=List[CategorySchema])
 async def get_all_categories(
     service: Annotated[CategoryService, Depends(get_category_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-    user: UserModel = Depends(get_auth_user_info),
-) -> list[CategoryModel]:
-    categories: list[CategoryModel] = await service.get_categories(db, user.user_id)
+    user: UserSchema = Depends(get_auth_user_info),
+) -> list[CategorySchema]:
+    categories: list[CategorySchema] = await service.get_categories(db, user.user_id)
     return categories
 
 
 @router.post("", status_code=HTTPStatus.CREATED)
 async def create_new_category(
-    category_data: CategoryCreateUpdateModel,
+    category_data: CategoryCreateUpdateSchema,
     service: Annotated[CategoryService, Depends(get_category_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-    user: UserModel = Depends(get_auth_user_info),
+    user: UserSchema = Depends(get_auth_user_info),
 ) -> None:
     await service.add_category(db, category_data, user.user_id)
 
@@ -58,19 +58,19 @@ async def get_category(
     category_id: str,
     service: Annotated[CategoryService, Depends(get_category_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-) -> CategoryModel:
-    category: CategoryModel = await service.get_category(db, category_id)
+) -> CategorySchema:
+    category: CategorySchema = await service.get_category(db, category_id)
     return category
 
 
 @router.put("/{category_id}")
 async def edit_category(
     category_id: str,
-    data: CategoryCreateUpdateModel,
+    data: CategoryCreateUpdateSchema,
     service: Annotated[CategoryService, Depends(get_category_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-) -> CategoryModel:
-    category: CategoryModel = await service.update_category(db, category_id, data)
+) -> CategorySchema:
+    category: CategorySchema = await service.update_category(db, category_id, data)
     return category
 
 

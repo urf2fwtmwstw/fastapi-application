@@ -2,49 +2,51 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.auth.utils import hash_password
-from internal.databases.models import User
-from internal.schemas.user_schema import UserCreateModel, UserModel, UserUpdateModel
+from internal.databases.models import User as UserModel
+from internal.schemas.user_schema import UserCreateSchema, UserSchema, UserUpdateSchema
 
 
 class UsersRepository:
     async def add_user(
-        self, async_session: async_sessionmaker[AsyncSession], new_user: UserCreateModel
+        self,
+        async_session: async_sessionmaker[AsyncSession],
+        new_user: UserCreateSchema,
     ) -> None:
-        user_model = User(
+        user = UserModel(
             user_id=new_user.user_id,
             username=new_user.username,
             hashed_password=hash_password(new_user.password),
         )
         async with async_session() as session:
-            session.add(user_model)
+            session.add(user)
             await session.commit()
 
     async def get_user(
         self, async_session: async_sessionmaker[AsyncSession], username: str
-    ) -> UserModel:
+    ) -> UserSchema:
         async with async_session() as session:
-            statement = select(User).filter(User.username == username)
+            statement = select(UserModel).filter(UserModel.username == username)
             result = await session.execute(statement)
-            user_model: User = result.scalars().one()
-            user_schema = UserModel(
-                user_id=user_model.user_id,
-                username=user_model.username,
-                hashed_password=user_model.hashed_password,
+            userDB: UserModel = result.scalars().one()
+            user = UserSchema(
+                user_id=userDB.user_id,
+                username=userDB.username,
+                hashed_password=userDB.hashed_password,
             )
-            return user_schema
+            return user
 
     async def update_user(
         self,
         async_session: async_sessionmaker[AsyncSession],
         user_id: str,
-        data: UserUpdateModel,
+        data: UserUpdateSchema,
     ) -> None:
         async with async_session() as session:
             statement = (
-                update(User)
+                update(UserModel)
                 .where(
-                    User.user_id == user_id,
-                    User.hashed_password == hash_password(data.old_password),
+                    UserModel.user_id == user_id,
+                    UserModel.hashed_password == hash_password(data.old_password),
                 )
                 .values(
                     username=data.username,

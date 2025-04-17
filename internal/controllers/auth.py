@@ -11,7 +11,7 @@ from internal.auth import utils
 from internal.auth.repository.users import UsersRepository
 from internal.databases.database import get_db
 from internal.schemas.token_schema import TokenInfo
-from internal.schemas.user_schema import UserCreateModel, UserModel, UserUpdateModel
+from internal.schemas.user_schema import UserCreateSchema, UserSchema, UserUpdateSchema
 from internal.services.user_service import UserService
 
 resources = {}
@@ -19,8 +19,8 @@ resources = {}
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
-    user_repository = UsersRepository()
-    resources["user_service"] = UserService(user_repository)
+    resources["user_repository"] = UsersRepository()
+    resources["user_service"] = UserService(resources["user_repository"])
     yield
     resources.clear()
 
@@ -41,7 +41,7 @@ async def validate_auth_user(
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
     username: str = Form(),
     password: str = Form(),
-) -> UserModel:
+) -> UserSchema:
     unauthorised_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password"
     )
@@ -58,7 +58,7 @@ async def get_auth_user_info(
     service: Annotated[UserService, Depends(get_user_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
     token: str = Depends(oauth2_scheme),
-) -> UserModel:
+) -> UserSchema:
     try:
         payload = utils.decode_jwt(token=token)
     except InvalidTokenError:
@@ -78,7 +78,7 @@ async def get_auth_user_info(
 
 @router.post("/signup", status_code=HTTPStatus.CREATED, response_model=TokenInfo)
 async def auth_new_user_issue_jwt(
-    user_data: UserCreateModel,
+    user_data: UserCreateSchema,
     service: Annotated[UserService, Depends(get_user_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
 ) -> TokenInfo:
@@ -90,7 +90,7 @@ async def auth_new_user_issue_jwt(
 
 @router.post("/signin", response_model=TokenInfo)
 async def auth_user_issue_jwt(
-    user: UserModel = Depends(validate_auth_user),
+    user: UserSchema = Depends(validate_auth_user),
 ) -> TokenInfo:
     jwt_payload: dict = {
         "sub": str(user.user_id),
@@ -102,7 +102,7 @@ async def auth_user_issue_jwt(
 
 
 @router.get("/verify")
-def view_auth_user_info(user: UserModel = Depends(get_auth_user_info)) -> dict:
+def view_auth_user_info(user: UserSchema = Depends(get_auth_user_info)) -> dict:
     return {
         "user_id": user.user_id,
         "username": user.username,
@@ -111,7 +111,7 @@ def view_auth_user_info(user: UserModel = Depends(get_auth_user_info)) -> dict:
 
 @router.patch("/users/{user_id}", response_model=TokenInfo)
 async def update_auth_user_data(
-    user_data: UserUpdateModel,
+    user_data: UserUpdateSchema,
     user_id: str,
     service: Annotated[UserService, Depends(get_user_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],

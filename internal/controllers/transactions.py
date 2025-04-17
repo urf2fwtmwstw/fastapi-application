@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from internal.controllers.auth import get_auth_user_info
 from internal.databases.database import get_db
 from internal.schemas.transaction_schema import (
-    TransactionCreateUpdateModel,
-    TransactionModel,
+    TransactionCreateUpdateSchema,
+    TransactionSchema,
 )
-from internal.schemas.user_schema import UserModel
+from internal.schemas.user_schema import UserSchema
 from internal.services.transaction_service import TransactionService
 from internal.transactions.repository.transactions import TransactionsRepository
 
@@ -20,8 +20,10 @@ resources = {}
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
-    transaction_repository = TransactionsRepository()
-    resources["transaction_service"] = TransactionService(transaction_repository)
+    resources["transaction_repository"] = TransactionsRepository()
+    resources["transaction_service"] = TransactionService(
+        resources["transaction_repository"]
+    )
     yield
     resources.clear()
 
@@ -36,13 +38,13 @@ def get_transaction_service():
     return transaction_service
 
 
-@router.get("", response_model=List[TransactionModel])
+@router.get("", response_model=List[TransactionSchema])
 async def get_all_transactions(
     service: Annotated[TransactionService, Depends(get_transaction_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-    user: UserModel = Depends(get_auth_user_info),
-) -> list[TransactionModel]:
-    transactions: list[TransactionModel] = await service.get_transactions(
+    user: UserSchema = Depends(get_auth_user_info),
+) -> list[TransactionSchema]:
+    transactions: list[TransactionSchema] = await service.get_transactions(
         db, user.user_id
     )
     return transactions
@@ -50,10 +52,10 @@ async def get_all_transactions(
 
 @router.post("", status_code=HTTPStatus.CREATED)
 async def create_transaction(
-    transaction_data: TransactionCreateUpdateModel,
+    transaction_data: TransactionCreateUpdateSchema,
     service: Annotated[TransactionService, Depends(get_transaction_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-    user: UserModel = Depends(get_auth_user_info),
+    user: UserSchema = Depends(get_auth_user_info),
 ) -> None:
     await service.add_transaction(db, transaction_data, user.user_id)
 
@@ -63,8 +65,8 @@ async def show_transaction(
     transaction_id,
     service: Annotated[TransactionService, Depends(get_transaction_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-) -> TransactionModel:
-    transaction: TransactionModel = await service.get_transaction(db, transaction_id)
+) -> TransactionSchema:
+    transaction: TransactionSchema = await service.get_transaction(db, transaction_id)
     return transaction
 
 
@@ -72,10 +74,12 @@ async def show_transaction(
 async def edit_transaction(
     transaction_id: str,
     service: Annotated[TransactionService, Depends(get_transaction_service)],
-    data: TransactionCreateUpdateModel,
+    data: TransactionCreateUpdateSchema,
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-) -> TransactionModel:
-    transaction: TransactionModel = await service.update_transaction(db, transaction_id, data)
+) -> TransactionSchema:
+    transaction: TransactionSchema = await service.update_transaction(
+        db, transaction_id, data
+    )
     return transaction
 
 

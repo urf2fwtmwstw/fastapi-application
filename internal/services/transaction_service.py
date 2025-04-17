@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.schemas.transaction_schema import (
-    TransactionCreateUpdateModel,
-    TransactionModel,
+    TransactionCreateUpdateSchema,
+    TransactionSchema,
 )
 from internal.transactions.repository.transactions import TransactionsRepository
 
@@ -13,8 +13,8 @@ class TransactionService:
 
     async def get_transactions(
         self, session: async_sessionmaker[AsyncSession], user_id: str
-    ) -> list[TransactionModel]:
-        transactions: list[TransactionModel] = await self.repo.get_transactions(
+    ) -> list[TransactionSchema]:
+        transactions: list[TransactionSchema] = await self.repo.get_transactions(
             session, user_id
         )
         return transactions
@@ -22,15 +22,15 @@ class TransactionService:
     async def add_transaction(
         self,
         session: async_sessionmaker[AsyncSession],
-        new_transaction: TransactionCreateUpdateModel,
+        new_transaction: TransactionCreateUpdateSchema,
         user_id: str,
     ) -> None:
         await self.repo.add_transaction(session, new_transaction, user_id)
 
     async def get_transaction(
         self, session: async_sessionmaker[AsyncSession], transaction_id: str
-    ) -> TransactionModel:
-        transaction: TransactionModel = await self.repo.get_transaction(
+    ) -> TransactionSchema:
+        transaction: TransactionSchema = await self.repo.get_transaction(
             session, transaction_id
         )
         return transaction
@@ -39,8 +39,8 @@ class TransactionService:
         self,
         session: async_sessionmaker[AsyncSession],
         transaction_id: str,
-        data: TransactionCreateUpdateModel,
-    ) -> TransactionModel:
+        data: TransactionCreateUpdateSchema,
+    ) -> TransactionSchema:
         return await self.repo.update_transaction(session, transaction_id, data)
 
     async def delete_transaction(
