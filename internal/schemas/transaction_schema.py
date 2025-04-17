@@ -9,7 +9,7 @@ class TypeEnum(str, Enum):
     expenses = "expenses"
 
 
-class TransactionModel(BaseModel):
+class TransactionSchema(BaseModel):
     transaction_id: UUID4
     transaction_type: TypeEnum
     transaction_value: float
@@ -24,7 +24,7 @@ class TransactionModel(BaseModel):
     )
 
 
-class TransactionCreateUpdateModel(BaseModel):
+class TransactionCreateUpdateSchema(BaseModel):
     transaction_type: TypeEnum
     transaction_value: float
     transaction_date: datetime
