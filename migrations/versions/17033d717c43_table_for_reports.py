@@ -24,7 +24,7 @@ def upgrade() -> None:
         "reports",
         sa.Column("report_id", sa.UUID(), nullable=False),
         sa.Column("report_created", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("reportz_year_month", sa.String(length=7), nullable=False),
+        sa.Column("report_year_month", sa.String(length=7), nullable=False),
         sa.Column("month_income", sa.Numeric(precision=10, scale=2), nullable=False),
         sa.Column("month_expenses", sa.Numeric(precision=10, scale=2), nullable=False),
         sa.Column("balance", sa.Numeric(precision=10, scale=2), nullable=False),
