@@ -1,4 +1,4 @@
-"""table_for_users
+"""create_table_for_users
 
 Revision ID: 7f62c15a3a9d
 Revises: e62593df46f8
