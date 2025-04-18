@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.databases.models import Transaction as TransactionModel
@@ -16,8 +16,10 @@ class TransactionsRepository:
         async_session: async_sessionmaker[AsyncSession], user_id: str
     ) -> list[TransactionSchema]:
         async with async_session() as session:
-            statement = select(TransactionModel).filter(
-                TransactionModel.user_id == user_id
+            statement = (
+                select(TransactionModel)
+                .filter(TransactionModel.user_id == user_id)
+                .order_by(desc(TransactionModel.transaction_date))
             )
             result = await session.execute(statement)
             transactions: list[TransactionSchema] = [

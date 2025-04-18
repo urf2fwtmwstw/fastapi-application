@@ -21,6 +21,22 @@ class UsersRepository:
             session.add(user)
             await session.commit()
 
+    async def get_users(
+        self, async_session: async_sessionmaker[AsyncSession]
+    ) -> list[UserSchema]:
+        async with async_session() as session:
+            statement = select(UserModel)
+            result = await session.execute(statement)
+            users: list[UserSchema] = [
+                UserSchema(
+                    user_id=user.user_id,
+                    username=user.username,
+                    hashed_password=user.hashed_password,
+                )
+                for user in result.scalars().all()
+            ]
+            return users
+
     async def get_user(
         self, async_session: async_sessionmaker[AsyncSession], username: str
     ) -> UserSchema:
