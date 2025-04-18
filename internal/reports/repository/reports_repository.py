@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.databases.models import Report
@@ -10,7 +9,7 @@ class ReportsRepository:
         self,
         async_session: async_sessionmaker[AsyncSession],
         report_data: ReportCreateSchema,
-    ):
+    ) -> None:
         report = Report(
             report_id=report_data.report_id,
             report_year_month=report_data.report_year_month,
