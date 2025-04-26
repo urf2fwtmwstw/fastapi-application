@@ -28,8 +28,13 @@ async def generate_reports(
     ),
 ):
     date = datetime.now(tz=UTC)
+    if date.month != 1:
+        month = date.month - 1
+    else:
+        month = 12
+        year = date.year - 1
     async for db in get_db():
-        asyncio.run(await service.async_report_generation(db, date.year, date.month))
+        asyncio.run(await service.async_report_generation(db, year, month))
 
 
 # OS signals handling
