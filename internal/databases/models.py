@@ -58,7 +58,9 @@ class Report(Base):
 
     report_id = Column(UUID(as_uuid=True), primary_key=True)
     report_created = Column(
-        DateTime(timezone=True), nullable=False, default=datetime.datetime.now
+        DateTime(timezone=True),
+        nullable=False,
+        default=datetime.datetime.now,
     )
     report_year_month = Column(String(7), nullable=False)
     month_income = Column(Numeric(precision=10, scale=2), nullable=False)
