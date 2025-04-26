@@ -21,6 +21,52 @@ class ReportService:
         self.transaction_service = transaction_service
         self.user_service = user_service
 
+    @staticmethod
+    async def __get_month_dependant_attributes(
+        report_month_transactions: list[TransactionSchema],
+    ) -> dict[str:float, str:float, str : dict[str:float]]:
+        month_income: float = 0
+        month_expenses: float = 0
+        expenses_in_category: dict[str:float] = {}
+        for transaction in report_month_transactions:
+            if transaction.transaction_type == "income":
+                month_income += transaction.transaction_value
+            else:
+                expense_value: float = transaction.transaction_value
+                month_expenses += expense_value
+                category_id: str = transaction.category_id
+                expenses_in_category[category_id] = (
+                    expenses_in_category.get(category_id, 0) + expense_value
+                )
+        return {
+            "month_income": month_income,
+            "month_expenses": month_expenses,
+            "expenses_in_category": expenses_in_category,
+        }
+
+    @staticmethod
+    async def __get_balance(transactions: list[TransactionSchema]) -> float:
+        balance: float = 0
+        for transaction in transactions:
+            if transaction.transaction_type == "income":
+                balance += transaction.transaction_value
+            elif transaction.transaction_type == "expenses":
+                balance -= transaction.transaction_value
+        return balance
+
+    # sort dictionary of {category_id: expenses} by value and return a string with ids of the most expensive categories
+    @staticmethod
+    async def __sort_category_dict(expense_categories: dict[str:float]) -> str:
+        most_expensive_categories_ids = [
+            str(category_id)
+            for category_id, expenses in sorted(
+                expense_categories.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+        ][:5]
+        return ", ".join(most_expensive_categories_ids)
+
     async def add_report(
         self,
         session: async_sessionmaker[AsyncSession],
@@ -29,46 +75,26 @@ class ReportService:
         report_year: int,
         report_month: int,
     ) -> None:
-        month_income: float = 0
-        month_expenses: float = 0
-        expenses_in_category: dict[str:float] = {}
-        last_transaction_index: int = len(transactions)
-        most_expensive_categories: None = None
-        balance: None = None
-        for i in range(last_transaction_index):
-            transaction: TransactionSchema = transactions[i]
-            if (
-                transaction.transaction_date.year == report_year
-                and transaction.transaction_date.month == report_month
-            ):
-                if transaction.transaction_type == "income":
-                    month_income += transaction.transaction_value
-                else:
-                    expense_value: float = transaction.transaction_value
-                    category_id: str = transaction.category_id
-                    month_expenses += expense_value
-                    expenses_in_category[category_id] = (
-                        expenses_in_category.get(category_id, 0) + expense_value
-                    )
-            else:
-                most_expensive_categories: str = ", ".join(
-                    [
-                        str(k)
-                        for k, v in sorted(
-                            expenses_in_category.items(),
-                            key=lambda item: item[1],
-                            reverse=True,
-                        )
-                    ][:5]
-                )
-                balance: float = month_income - month_expenses
-                for j in range(i, last_transaction_index):
-                    transaction: TransactionSchema = transactions[j]
-                    if transaction.transaction_type == "income":
-                        balance += transaction.transaction_value
-                    else:
-                        balance -= transaction.transaction_value
-                break
+        report_month_transactions = [
+            transaction
+            for transaction in transactions
+            if transaction.transaction_date.year == report_year
+            and transaction.transaction_date.month == report_month
+        ]
+        month_dependant_attributes = await self.__get_month_dependant_attributes(
+            report_month_transactions
+        )
+        month_income: float = month_dependant_attributes["month_income"]
+        month_expenses: float = month_dependant_attributes["month_expenses"]
+        expenses_in_category: dict[str:float] = month_dependant_attributes[
+            "expenses_in_category"
+        ]
+        most_expensive_categories: str = await self.__sort_category_dict(
+            expenses_in_category
+        )
+        balance: float = await self.__get_balance(transactions)
+        balance += month_income - month_expenses
+
         report = ReportCreateSchema(
             report_year_month=str(report_year) + "-" + str(report_month),
             month_income=month_income,
