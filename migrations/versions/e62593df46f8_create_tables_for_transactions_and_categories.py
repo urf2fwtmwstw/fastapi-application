@@ -1,4 +1,4 @@
-"""tables_for_transactions_and_categories
+"""create_tables_for_transactions_and_categories
 
 Revision ID: e62593df46f8
 Revises:

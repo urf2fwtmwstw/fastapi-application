@@ -13,6 +13,12 @@ class UserService:
     ) -> None:
         return await self.repo.add_user(session, new_user)
 
+    async def get_users(
+        self, session: async_sessionmaker[AsyncSession]
+    ) -> list[UserSchema]:
+        users = await self.repo.get_users(session)
+        return users
+
     async def get_user(
         self, session: async_sessionmaker[AsyncSession], username: str
     ) -> UserSchema:
