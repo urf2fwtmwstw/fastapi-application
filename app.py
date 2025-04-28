@@ -8,7 +8,7 @@ from fastapi import FastAPI
 
 from internal.auth.repository.users import UsersRepository
 from internal.databases.database import get_db
-from internal.reports.repository.reports_repository import ReportsRepository
+from internal.reports.repository.reports import ReportsRepository
 from internal.services.report_service import ReportService
 from internal.services.transaction_service import TransactionService
 from internal.services.user_service import UserService
