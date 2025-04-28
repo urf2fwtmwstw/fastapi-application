@@ -133,3 +133,9 @@ class ReportService:
             async_tasks.append(task)
 
         await asyncio.gather(*async_tasks)
+
+    async def get_report(
+        self, session: async_sessionmaker[AsyncSession], report_id: str
+    ) -> ReportSchema:
+        report: ReportSchema = await self.repo.get_report(session, report_id)
+        return report

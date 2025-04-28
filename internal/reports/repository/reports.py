@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.databases.models import Report as ReportModel
@@ -22,3 +23,23 @@ class ReportsRepository:
         async with async_session() as session:
             session.add(report)
             await session.commit()
+
+    @staticmethod
+    async def get_report(
+        async_session: async_sessionmaker[AsyncSession],
+        report_id: str,
+    ) -> ReportSchema:
+        async with async_session() as session:
+            statement = select(ReportModel).filter(ReportModel.report_id == report_id)
+            result = await session.execute(statement)
+            reportDB: ReportModel = result.scalars().one()
+            report = ReportSchema(
+                report_id=reportDB.report_id,
+                report_year_month=reportDB.report_year_month,
+                month_income=reportDB.month_income,
+                month_expenses=reportDB.month_expenses,
+                balance=reportDB.balance,
+                most_expensive_categories=reportDB.most_expensive_categories,
+                user_id=reportDB.user_id,
+            )
+            return report
