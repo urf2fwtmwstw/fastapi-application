@@ -1,9 +1,10 @@
 import asyncio
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from internal.reports.repository.reports_repository import ReportsRepository
-from internal.schemas.report_schema import ReportCreateSchema
+from internal.reports.repository.reports import ReportsRepository
+from internal.schemas.report_schema import ReportSchema
 from internal.schemas.transaction_schema import TransactionSchema
 from internal.schemas.user_schema import UserSchema
 from internal.services.transaction_service import TransactionService
@@ -15,7 +16,7 @@ class ReportService:
         self,
         repo: ReportsRepository,
         transaction_service: TransactionService,
-        user_service: UserService,
+        user_service: UserService = None,
     ):
         self.repo = repo
         self.transaction_service = transaction_service
@@ -70,11 +71,14 @@ class ReportService:
     async def add_report(
         self,
         session: async_sessionmaker[AsyncSession],
-        transactions: list[TransactionSchema],
-        user_id,
+        user_id: str,
+        report_id: uuid,
         report_year: int,
         report_month: int,
     ) -> None:
+        transactions: list[
+            TransactionSchema
+        ] = await self.transaction_service.get_transactions(session, user_id)
         report_month_transactions = [
             transaction
             for transaction in transactions
@@ -95,7 +99,8 @@ class ReportService:
         balance: float = await self.__get_balance(transactions)
         balance += month_income - month_expenses
 
-        report = ReportCreateSchema(
+        report = ReportSchema(
+            report_id=report_id,
             report_year_month=str(report_year) + "-" + str(report_month),
             month_income=month_income,
             month_expenses=month_expenses,
@@ -116,12 +121,13 @@ class ReportService:
         user_ids: list[str] = [str(user.user_id) for user in users]
 
         for user_id in user_ids:
-            transactions: list[
-                TransactionSchema
-            ] = await self.transaction_service.get_transactions(session, user_id)
             task = asyncio.create_task(
                 self.add_report(
-                    session, transactions, user_id, report_year, report_month
+                    session,
+                    user_id,
+                    uuid.uuid4(),
+                    report_year,
+                    report_month,
                 )
             )
             async_tasks.append(task)

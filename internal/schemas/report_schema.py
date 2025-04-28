@@ -1,10 +1,8 @@
-from uuid import uuid4
-
 from pydantic import UUID4, BaseModel, ConfigDict
 
 
-class ReportCreateSchema(BaseModel):
-    report_id: UUID4 = uuid4()
+class ReportSchema(BaseModel):
+    report_id: UUID4
     report_year_month: str
     month_income: float
     month_expenses: float
