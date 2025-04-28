@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 import jwt
-import pytz
 
 from internal.config.config import settings
 
@@ -15,7 +14,7 @@ def encode_jwt(
     expire_timedelta: timedelta | None = None,
 ):
     to_encode = payload.copy()
-    now = datetime.now(pytz.utc)
+    now = datetime.now(UTC)
 
     if expire_timedelta:
         expire = now + expire_timedelta
