@@ -13,7 +13,7 @@ from internal.schemas.transaction_schema import (
 )
 from internal.schemas.user_schema import UserSchema
 from internal.services.transaction_service import TransactionService
-from internal.transactions.repository.transactions import TransactionsRepository
+from internal.transactions.repository import TransactionsRepository
 
 resources = {}
 

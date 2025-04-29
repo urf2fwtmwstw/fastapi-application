@@ -6,13 +6,13 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
-from internal.auth.repository.users import UsersRepository
+from internal.auth.repository import UsersRepository
 from internal.databases.database import get_db
-from internal.reports.repository.reports import ReportsRepository
+from internal.reports.repository import ReportsRepository
 from internal.services.report_service import ReportService
 from internal.services.transaction_service import TransactionService
 from internal.services.user_service import UserService
-from internal.transactions.repository.transactions import TransactionsRepository
+from internal.transactions.repository import TransactionsRepository
 
 resources = {}
 jobstores = {"default": MemoryJobStore()}

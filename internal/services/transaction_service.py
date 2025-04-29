@@ -4,7 +4,7 @@ from internal.schemas.transaction_schema import (
     TransactionCreateUpdateSchema,
     TransactionSchema,
 )
-from internal.transactions.repository.transactions import TransactionsRepository
+from internal.transactions.repository import TransactionsRepository
 
 
 class TransactionService:

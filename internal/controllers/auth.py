@@ -8,7 +8,7 @@ from jwt.exceptions import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.auth import utils
-from internal.auth.repository.users import UsersRepository
+from internal.auth.repository import UsersRepository
 from internal.databases.database import get_db
 from internal.schemas.token_schema import TokenInfo
 from internal.schemas.user_schema import UserCreateSchema, UserSchema, UserUpdateSchema

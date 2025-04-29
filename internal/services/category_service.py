@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from internal.categories.repository.categories import CategoriesRepository
+from internal.categories.repository import CategoriesRepository
 from internal.schemas.category_schema import CategoryCreateUpdateSchema, CategorySchema
 
 

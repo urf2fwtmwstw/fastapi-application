@@ -3,7 +3,7 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from internal.reports.repository.reports import ReportsRepository
+from internal.reports.repository import ReportsRepository
 from internal.schemas.report_schema import ReportSchema
 from internal.schemas.transaction_schema import TransactionSchema
 from internal.schemas.user_schema import UserSchema

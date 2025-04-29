@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.controllers.auth import get_auth_user_info
 from internal.databases.database import get_db
-from internal.reports.repository.reports import ReportsRepository
+from internal.reports.repository import ReportsRepository
 from internal.schemas.report_schema import (
     ReportCreateSchema,
     ReportSchema,
@@ -15,7 +15,7 @@ from internal.schemas.report_schema import (
 from internal.schemas.user_schema import UserSchema
 from internal.services.report_service import ReportService
 from internal.services.transaction_service import TransactionService
-from internal.transactions.repository.transactions import TransactionsRepository
+from internal.transactions.repository import TransactionsRepository
 
 resources = {}
 
