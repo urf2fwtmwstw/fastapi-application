@@ -20,6 +20,12 @@ class TransactionTypes(enum.Enum):
     expenses = "expenses"
 
 
+class FiniteStateMachineStatuses(enum.Enum):
+    created = "CREATED"
+    generated = "GENERATED"
+    failed = "FAILED"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -46,7 +52,9 @@ class Transaction(Base):
     transaction_value = Column(Numeric(precision=10, scale=2), nullable=False)
     transaction_date = Column(DateTime(timezone=True), nullable=False)
     transaction_created = Column(
-        DateTime(timezone=True), nullable=False, default=datetime.datetime.now
+        DateTime(timezone=True),
+        nullable=False,
+        default=datetime.datetime.now,
     )
     transaction_description = Column(String(200))
     user_id = Column(ForeignKey("users.user_id"))
@@ -63,8 +71,15 @@ class Report(Base):
         default=datetime.datetime.now,
     )
     report_year_month = Column(String(7), nullable=False)
-    month_income = Column(Numeric(precision=10, scale=2), nullable=False)
-    month_expenses = Column(Numeric(precision=10, scale=2), nullable=False)
-    balance = Column(Numeric(precision=10, scale=2), nullable=False)
-    most_expensive_categories = Column(String(188), nullable=False)
-    user_id = Column(ForeignKey("users.user_id"))
+    month_income = Column(Numeric(precision=10, scale=2))
+    month_expenses = Column(Numeric(precision=10, scale=2))
+    balance = Column(Numeric(precision=10, scale=2))
+    most_expensive_categories = Column(String(188))
+    user_id = Column(ForeignKey("users.user_id"), nullable=False)
+    fsm_status = Column(
+        Enum(
+            FiniteStateMachineStatuses,
+            values_callable=lambda statuses: [str(status.value) for status in statuses],
+        ),
+        nullable=False,
+    )
