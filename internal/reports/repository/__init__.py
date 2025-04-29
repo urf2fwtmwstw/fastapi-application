@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.databases.models import Report as ReportModel
@@ -43,3 +43,13 @@ class ReportsRepository:
                 user_id=reportDB.user_id,
             )
             return report
+
+    @staticmethod
+    async def delete_report(
+        async_session: async_sessionmaker[AsyncSession],
+        report_id: str,
+    ) -> None:
+        async with async_session() as session:
+            statement = delete(ReportModel).where(ReportModel.report_id == report_id)
+            await session.execute(statement)
+            await session.commit()
