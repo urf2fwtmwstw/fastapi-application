@@ -37,7 +37,9 @@ class ReportsRepository:
                 )
                 await session.execute(statement)
             elif report_data.fsm_status == ReportFSMStatuses.failed:
-                update(ReportModel).where(ReportModel.report_id == report.report_id).values(fsm_status=report_data.fsm_status)
+                update(ReportModel).where(
+                    ReportModel.report_id == report.report_id
+                ).values(fsm_status=report_data.fsm_status)
             await session.commit()
 
     @staticmethod

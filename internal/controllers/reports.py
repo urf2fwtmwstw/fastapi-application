@@ -1,5 +1,6 @@
 import uuid
 from contextlib import asynccontextmanager
+from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends
@@ -76,6 +77,15 @@ async def get_report(
     report_id: str,
     service: Annotated[ReportService, Depends(get_report_service)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-):
+) -> ReportSchema:
     report: ReportSchema = await service.get_report(db, report_id)
     return report
+
+
+@router.delete("/delete_report", status_code=HTTPStatus.NO_CONTENT)
+async def delete_report(
+    report_id: str,
+    service: Annotated[ReportService, Depends(get_report_service)],
+    db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+) -> None:
+    await service.delete_report(db, report_id)

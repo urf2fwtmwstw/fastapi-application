@@ -153,7 +153,16 @@ class ReportService:
         await asyncio.gather(*async_tasks)
 
     async def get_report(
-        self, session: async_sessionmaker[AsyncSession], report_id: str
+        self,
+        session: async_sessionmaker[AsyncSession],
+        report_id: str,
     ) -> ReportSchema:
         report: ReportSchema = await self.repo.get_report(session, report_id)
         return report
+
+    async def delete_report(
+        self,
+        session: async_sessionmaker[AsyncSession],
+        report_id,
+    ) -> None:
+        await self.repo.delete_report(session, report_id)
