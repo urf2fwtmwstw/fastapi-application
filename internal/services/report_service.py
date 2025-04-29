@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.reports.repository import ReportsRepository
-from internal.schemas.report_schema import ReportSchema
+from internal.schemas.report_schema import ReportFSMStatuses, ReportSchema
 from internal.schemas.transaction_schema import TransactionSchema
 from internal.schemas.user_schema import UserSchema
 from internal.services.transaction_service import TransactionService
@@ -68,7 +68,7 @@ class ReportService:
         ][:5]
         return ", ".join(most_expensive_categories_ids)
 
-    async def add_report(
+    async def create_report(
         self,
         session: async_sessionmaker[AsyncSession],
         user_id: str,
@@ -76,6 +76,27 @@ class ReportService:
         report_year: int,
         report_month: int,
     ) -> None:
+        report = ReportSchema(
+            report_id=report_id,
+            user_id=user_id,
+            report_year_month=str(report_year) + "-" + str(report_month),
+            fsm_status=ReportFSMStatuses.created,
+        )
+        await self.repo.add_report(session, report)
+        try:
+            await self.generate_report(session, report, report_year, report_month)
+        except:
+            report.fsm_status = ReportFSMStatuses.failed
+            await self.repo.add_report(session, report)
+
+    async def generate_report(
+        self,
+        session: async_sessionmaker[AsyncSession],
+        report: ReportSchema,
+        report_year: int,
+        report_month: int,
+    ) -> None:
+        user_id = report.user_id
         transactions: list[
             TransactionSchema
         ] = await self.transaction_service.get_transactions(session, user_id)
@@ -99,15 +120,12 @@ class ReportService:
         balance: float = await self.__get_balance(transactions)
         balance += month_income - month_expenses
 
-        report = ReportSchema(
-            report_id=report_id,
-            report_year_month=str(report_year) + "-" + str(report_month),
-            month_income=month_income,
-            month_expenses=month_expenses,
-            balance=balance,
-            most_expensive_categories=most_expensive_categories,
-            user_id=user_id,
-        )
+        report.month_income = month_income
+        report.month_expenses = month_expenses
+        report.balance = balance
+        report.most_expensive_categories = most_expensive_categories
+        report.fsm_status = ReportFSMStatuses.generated
+
         await self.repo.add_report(session, report)
 
     async def async_report_generation(
@@ -122,7 +140,7 @@ class ReportService:
 
         for user_id in user_ids:
             task = asyncio.create_task(
-                self.add_report(
+                self.create_report(
                     session,
                     user_id,
                     uuid.uuid4(),

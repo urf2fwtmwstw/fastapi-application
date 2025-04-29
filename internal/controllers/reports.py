@@ -61,7 +61,7 @@ async def create_report(
 ) -> dict:
     report_id = uuid.uuid4()
     background_tasks.add_task(
-        service.add_report,
+        service.create_report,
         db,
         user.user_id,
         report_id,
