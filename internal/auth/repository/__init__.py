@@ -1,1 +1,1 @@
-from users import UsersRepository
+from internal.auth.repository.users import UsersRepository

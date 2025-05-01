@@ -1,1 +1,1 @@
-from reports import ReportsRepository
+from internal.reports.repository.reports import ReportsRepository
