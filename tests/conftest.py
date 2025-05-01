@@ -15,3 +15,8 @@ def client():
 @pytest.fixture(scope="module")
 def registered_test_user_data():
     return {"username": "test_username", "password": "password123"}
+
+
+@pytest.fixture(scope="module")
+def report_data() -> dict[str:int]:
+    return {"report_year": 2025, "report_month": 4}

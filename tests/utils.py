@@ -61,3 +61,16 @@ def get_transaction_id(client: TestClient, user_data: dict) -> str:
         "api/v1/transactions",
         headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
     ).json()[-1]["transaction_id"]
+
+
+def get_report_id(
+    client: TestClient,
+    registered_test_user_data: dict[str:str],
+    report_data: dict[str:int],
+) -> str:
+    token: dict = authorize(client, registered_test_user_data)
+    return client.post(
+        "/api/v1/create_report",
+        json=report_data,
+        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+    ).json()["report_id"]
