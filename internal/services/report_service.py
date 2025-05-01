@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.reports.repository import ReportsRepository
-from internal.schemas.report_schema import ReportFSMStatuses, ReportSchema
+from internal.schemas.report_schema import ReportSchema, ReportStatus
 from internal.schemas.transaction_schema import TransactionSchema
 from internal.schemas.user_schema import UserSchema
 from internal.services.transaction_service import TransactionService
@@ -80,14 +80,14 @@ class ReportService:
             report_id=report_id,
             user_id=user_id,
             report_year_month=str(report_year) + "-" + str(report_month),
-            fsm_status=ReportFSMStatuses.created,
+            status=ReportStatus.created,
         )
         await self.repo.add_report(session, report)
         try:
             await self.generate_report(session, report, report_year, report_month)
         except:
-            report.fsm_status = ReportFSMStatuses.failed
-            await self.repo.add_report(session, report)
+            report.status = ReportStatus.failed
+            await self.repo.update_report(session, report)
 
     async def generate_report(
         self,
@@ -124,9 +124,9 @@ class ReportService:
         report.month_expenses = month_expenses
         report.balance = balance
         report.most_expensive_categories = most_expensive_categories
-        report.fsm_status = ReportFSMStatuses.generated
+        report.status = ReportStatus.generated
 
-        await self.repo.add_report(session, report)
+        await self.repo.update_report(session, report)
 
     async def async_report_generation(
         self,
