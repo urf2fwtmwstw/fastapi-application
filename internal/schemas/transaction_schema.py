@@ -25,7 +25,7 @@ class TransactionSchema(BaseModel):
 
 
 class TransactionCreateUpdateSchema(BaseModel):
-    transaction_type: TypeEnum
+    transaction_type: TransactionType
     transaction_value: float
     transaction_date: datetime
     transaction_description: str | None
