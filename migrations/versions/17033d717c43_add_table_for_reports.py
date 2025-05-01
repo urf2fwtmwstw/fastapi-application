@@ -1,4 +1,4 @@
-"""create_table_for_reports
+"""add_table_for_reports
 
 Revision ID: 17033d717c43
 Revises: 7f62c15a3a9d

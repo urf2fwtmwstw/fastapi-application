@@ -5,7 +5,7 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from internal.categories.repository.categories import CategoriesRepository
+from internal.categories.repository import CategoriesRepository
 from internal.controllers.auth import get_auth_user_info
 from internal.databases.database import get_db
 from internal.schemas.category_schema import CategoryCreateUpdateSchema, CategorySchema

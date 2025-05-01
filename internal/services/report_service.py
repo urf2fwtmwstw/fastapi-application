@@ -1,9 +1,10 @@
 import asyncio
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from internal.reports.repository.reports_repository import ReportsRepository
-from internal.schemas.report_schema import ReportCreateSchema
+from internal.reports.repository import ReportsRepository
+from internal.schemas.report_schema import ReportSchema, ReportStatus
 from internal.schemas.transaction_schema import TransactionSchema
 from internal.schemas.user_schema import UserSchema
 from internal.services.transaction_service import TransactionService
@@ -15,7 +16,7 @@ class ReportService:
         self,
         repo: ReportsRepository,
         transaction_service: TransactionService,
-        user_service: UserService,
+        user_service: UserService = None,
     ):
         self.repo = repo
         self.transaction_service = transaction_service
@@ -67,14 +68,38 @@ class ReportService:
         ][:5]
         return ", ".join(most_expensive_categories_ids)
 
-    async def add_report(
+    async def create_report(
         self,
         session: async_sessionmaker[AsyncSession],
-        transactions: list[TransactionSchema],
-        user_id,
+        user_id: str,
+        report_id: uuid,
         report_year: int,
         report_month: int,
     ) -> None:
+        report = ReportSchema(
+            report_id=report_id,
+            user_id=user_id,
+            report_year_month=str(report_year) + "-" + str(report_month),
+            status=ReportStatus.created,
+        )
+        await self.repo.add_report(session, report)
+        try:
+            await self.generate_report(session, report, report_year, report_month)
+        except:
+            report.status = ReportStatus.failed
+            await self.repo.update_report(session, report)
+
+    async def generate_report(
+        self,
+        session: async_sessionmaker[AsyncSession],
+        report: ReportSchema,
+        report_year: int,
+        report_month: int,
+    ) -> None:
+        user_id = report.user_id
+        transactions: list[
+            TransactionSchema
+        ] = await self.transaction_service.get_transactions(session, user_id)
         report_month_transactions = [
             transaction
             for transaction in transactions
@@ -95,15 +120,13 @@ class ReportService:
         balance: float = await self.__get_balance(transactions)
         balance += month_income - month_expenses
 
-        report = ReportCreateSchema(
-            report_year_month=str(report_year) + "-" + str(report_month),
-            month_income=month_income,
-            month_expenses=month_expenses,
-            balance=balance,
-            most_expensive_categories=most_expensive_categories,
-            user_id=user_id,
-        )
-        await self.repo.add_report(session, report)
+        report.month_income = month_income
+        report.month_expenses = month_expenses
+        report.balance = balance
+        report.most_expensive_categories = most_expensive_categories
+        report.status = ReportStatus.generated
+
+        await self.repo.update_report(session, report)
 
     async def async_report_generation(
         self,
@@ -116,14 +139,30 @@ class ReportService:
         user_ids: list[str] = [str(user.user_id) for user in users]
 
         for user_id in user_ids:
-            transactions: list[
-                TransactionSchema
-            ] = await self.transaction_service.get_transactions(session, user_id)
             task = asyncio.create_task(
-                self.add_report(
-                    session, transactions, user_id, report_year, report_month
+                self.create_report(
+                    session,
+                    user_id,
+                    uuid.uuid4(),
+                    report_year,
+                    report_month,
                 )
             )
             async_tasks.append(task)
 
         await asyncio.gather(*async_tasks)
+
+    async def get_report(
+        self,
+        session: async_sessionmaker[AsyncSession],
+        report_id: str,
+    ) -> ReportSchema:
+        report: ReportSchema = await self.repo.get_report(session, report_id)
+        return report
+
+    async def delete_report(
+        self,
+        session: async_sessionmaker[AsyncSession],
+        report_id,
+    ) -> None:
+        await self.repo.delete_report(session, report_id)

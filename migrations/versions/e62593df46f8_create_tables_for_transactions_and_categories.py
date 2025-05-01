@@ -27,7 +27,7 @@ def upgrade() -> None:
         sa.Column("category_description", sa.String(length=200), nullable=False),
         sa.Column(
             "category_type",
-            sa.Enum("income", "expenses", name="categorytypes"),
+            sa.Enum("income", "expenses", name="categorytype"),
             nullable=False,
         ),
         sa.PrimaryKeyConstraint("category_id"),
@@ -37,7 +37,7 @@ def upgrade() -> None:
         sa.Column("transaction_id", sa.UUID(), nullable=False),
         sa.Column(
             "transaction_type",
-            sa.Enum("income", "expenses", name="transactiontypes"),
+            sa.Enum("income", "expenses", name="transactiontype"),
             nullable=False,
         ),
         sa.Column(

@@ -4,14 +4,14 @@ from enum import Enum
 from pydantic import UUID4, BaseModel, ConfigDict
 
 
-class TypeEnum(str, Enum):
+class TransactionType(str, Enum):
     income = "income"
     expenses = "expenses"
 
 
 class TransactionSchema(BaseModel):
     transaction_id: UUID4
-    transaction_type: TypeEnum
+    transaction_type: TransactionType
     transaction_value: float
     transaction_date: datetime
     transaction_created: datetime
@@ -25,7 +25,7 @@ class TransactionSchema(BaseModel):
 
 
 class TransactionCreateUpdateSchema(BaseModel):
-    transaction_type: TypeEnum
+    transaction_type: TransactionType
     transaction_value: float
     transaction_date: datetime
     transaction_description: str | None
