@@ -10,17 +10,17 @@ class Base(DeclarativeBase):
     pass
 
 
-class CategoryTypes(enum.Enum):
+class CategoryType(enum.Enum):
     income = "income"
     expenses = "expenses"
 
 
-class TransactionTypes(enum.Enum):
+class TransactionType(enum.Enum):
     income = "income"
     expenses = "expenses"
 
 
-class FiniteStateMachineStatuses(enum.Enum):
+class ReportStatus(enum.Enum):
     created = "CREATED"
     generated = "GENERATED"
     failed = "FAILED"
@@ -40,7 +40,7 @@ class Category(Base):
     category_id = Column(UUID(as_uuid=True), primary_key=True)
     category_name = Column(String(50), nullable=False)
     category_description = Column(String(200), nullable=False)
-    category_type = Column(Enum(CategoryTypes), nullable=False)
+    category_type = Column(Enum(CategoryType), nullable=False)
     user_id = Column(ForeignKey("users.user_id"))
 
 
@@ -48,7 +48,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     transaction_id = Column(UUID(as_uuid=True), primary_key=True)
-    transaction_type = Column(Enum(TransactionTypes), nullable=False)
+    transaction_type = Column(Enum(TransactionType), nullable=False)
     transaction_value = Column(Numeric(precision=10, scale=2), nullable=False)
     transaction_date = Column(DateTime(timezone=True), nullable=False)
     transaction_created = Column(
@@ -76,9 +76,9 @@ class Report(Base):
     balance = Column(Numeric(precision=10, scale=2))
     most_expensive_categories = Column(String(188))
     user_id = Column(ForeignKey("users.user_id"), nullable=False)
-    fsm_status = Column(
+    status = Column(
         Enum(
-            FiniteStateMachineStatuses,
+            ReportStatus,
             values_callable=lambda statuses: [str(status.value) for status in statuses],
         ),
         nullable=False,

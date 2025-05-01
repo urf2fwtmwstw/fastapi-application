@@ -4,7 +4,7 @@ from enum import Enum
 from pydantic import UUID4, BaseModel, ConfigDict
 
 
-class ReportFSMStatuses(str, Enum):
+class ReportStatus(str, Enum):
     created = "CREATED"
     generated = "GENERATED"
     failed = "FAILED"
@@ -19,7 +19,7 @@ class ReportSchema(BaseModel):
     balance: float | None = None
     most_expensive_categories: str | None = None
     user_id: UUID4
-    fsm_status: ReportFSMStatuses
+    status: ReportStatus
 
     model_config = ConfigDict(from_attributes=True)
 

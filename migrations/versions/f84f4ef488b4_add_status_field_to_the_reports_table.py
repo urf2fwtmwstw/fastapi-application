@@ -8,9 +8,8 @@ Create Date: 2025-04-30 04:53:58.151108
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "f84f4ef488b4"
@@ -24,9 +23,9 @@ def upgrade() -> None:
     op.add_column(
         "reports",
         sa.Column(
-            "fsm_status",
+            "status",
             sa.Enum(
-                "CREATED", "GENERATED", "FAILED", name="finitestatemachinestatuses"
+                "CREATED", "GENERATED", "FAILED", name="reportstatus"
             ),
             nullable=False,
         ),
@@ -72,5 +71,5 @@ def downgrade() -> None:
         existing_type=sa.NUMERIC(precision=10, scale=2),
         nullable=False,
     )
-    op.drop_column("reports", "fsm_status")
+    op.drop_column("reports", "status")
     # ### end Alembic commands ###
