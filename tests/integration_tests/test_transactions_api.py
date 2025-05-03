@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from tests.utils import (
     authorize,
+    generate_category,
     generate_transaction,
     get_category_id,
     get_transaction_id,
@@ -9,23 +10,28 @@ from tests.utils import (
 
 
 def test_create_transaction(
-    client: TestClient, registered_test_user_data: dict
+    client: TestClient,
+    registered_test_user_data: dict[str:str],
 ) -> None:
-    token: dict = authorize(client, registered_test_user_data)
+    headers: dict[str:str] = authorize(client, registered_test_user_data)
+    client.post("api/v1/categories", json=generate_category(), headers=headers)
     category_id: str = get_category_id(client, registered_test_user_data)
     response = client.post(
         "api/v1/transactions",
         json=generate_transaction(client, category_id),
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     )
     assert response.status_code == 201
 
 
-def test_get_transactions(client: TestClient, registered_test_user_data: dict) -> None:
-    token: dict = authorize(client, registered_test_user_data)
+def test_get_transactions(
+    client: TestClient,
+    registered_test_user_data: dict[str:str],
+) -> None:
+    headers: dict[str:str] = authorize(client, registered_test_user_data)
     response = client.get(
         "api/v1/transactions",
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     )
     assert response.status_code == 200
     assert len(response.json()) >= 0
@@ -51,18 +57,22 @@ def test_edit_transaction(client: TestClient, registered_test_user_data: dict) -
 
 
 def test_delete_transaction(
-    client: TestClient, registered_test_user_data: dict
+    client: TestClient,
+    registered_test_user_data: dict[str:str],
 ) -> None:
-    token: dict = authorize(client, registered_test_user_data)
+    headers: dict[str:str] = authorize(client, registered_test_user_data)
     transaction_id: str = get_transaction_id(client, registered_test_user_data)
     old_transaction_list: list = client.get(
         "api/v1/transactions",
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     ).json()
     response = client.delete(f"api/v1/transactions/{transaction_id}")
     new_transaction_list: list = client.get(
         "api/v1/transactions",
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     ).json()
+    client.delete(
+        f"api/v1/categories/{get_category_id(client, registered_test_user_data)}"
+    )
     assert response.status_code == 204
     assert len(old_transaction_list) - 1 == len(new_transaction_list)
