@@ -15,11 +15,14 @@ def test_authentication(client: TestClient, registered_test_user_data: dict) -> 
     assert response.json()["access_token"] is not None
 
 
-def test_verification(client: TestClient, registered_test_user_data: dict) -> None:
-    token: dict = authorize(client, registered_test_user_data)
+def test_verification(
+    client: TestClient,
+    registered_test_user_data: dict[str:str],
+) -> None:
+    headers: dict[str:str] = authorize(client, registered_test_user_data)
     response = client.get(
         "/api/v1/verify",
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     )
     assert response.status_code == 200
 

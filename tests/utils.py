@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 
@@ -35,31 +35,32 @@ def generate_transaction(client: TestClient, category_id: str) -> dict:
     }
 
 
-def authorize(client: TestClient, user_data: dict) -> dict:
-    return client.post("/api/v1/signin", data=user_data).json()
+def authorize(client: TestClient, user_data: dict[str:str]) -> dict[str:str]:
+    token = client.post("/api/v1/signin", data=user_data).json()
+    return {"Authorization": f"{token['token_type']} {token['access_token']}"}
 
 
-def get_user_id(client: TestClient, user_data: dict) -> str:
-    token: dict = authorize(client, user_data)
+def get_user_id(client: TestClient, user_data: dict[str: str]) -> str:
+    headers: dict[str: str] = authorize(client, user_data)
     return client.get(
         "/api/v1/verify",
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     ).json()["user_id"]
 
 
 def get_category_id(client: TestClient, user_data: dict) -> str:
-    token: dict = authorize(client, user_data)
+    headers: dict[str: str] = authorize(client, user_data)
     return client.get(
         "api/v1/categories",
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     ).json()[-1]["category_id"]
 
 
 def get_transaction_id(client: TestClient, user_data: dict) -> str:
-    token: dict = authorize(client, user_data)
+    headers: dict[str: str] = authorize(client, user_data)
     return client.get(
         "api/v1/transactions",
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     ).json()[-1]["transaction_id"]
 
 
@@ -68,9 +69,9 @@ def get_report_id(
     registered_test_user_data: dict[str:str],
     report_data: dict[str:int],
 ) -> str:
-    token: dict = authorize(client, registered_test_user_data)
+    headers: dict[str: str] = authorize(client, registered_test_user_data)
     return client.post(
         "/api/v1/create_report",
         json=report_data,
-        headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
+        headers=headers,
     ).json()["report_id"]

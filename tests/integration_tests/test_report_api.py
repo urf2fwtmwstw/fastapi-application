@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi.testclient import TestClient
 
 from tests.utils import authorize, get_report_id
@@ -11,7 +13,10 @@ def test_create_report(
     token: dict = authorize(client, registered_test_user_data)
     response = client.post(
         "api/v1/create_report",
-        json=report_data,
+        json={
+            "report_year": datetime.datetime.now(tz=datetime.UTC).year,
+            "report_month": datetime.datetime.now(tz=datetime.UTC).month,
+        },
         headers={"Authorization": f"{token['token_type']} {token['access_token']}"},
     )
     assert response.status_code == 200
