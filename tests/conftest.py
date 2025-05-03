@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -19,4 +21,7 @@ def registered_test_user_data():
 
 @pytest.fixture(scope="module")
 def report_data() -> dict[str:int]:
-    return {"report_year": 2025, "report_month": 4}
+    return {
+        "report_year": datetime.datetime.now(tz=datetime.UTC).year,
+        "report_month": datetime.datetime.now(tz=datetime.UTC).month,
+    }
