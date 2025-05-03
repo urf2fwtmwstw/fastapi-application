@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 from tests.utils import (
     authorize,
+    generate_category,
     generate_transaction,
     get_category_id,
     get_transaction_id,
@@ -13,6 +14,7 @@ def test_create_transaction(
     registered_test_user_data: dict[str:str],
 ) -> None:
     headers: dict[str:str] = authorize(client, registered_test_user_data)
+    client.post("api/v1/categories", json=generate_category(), headers=headers)
     category_id: str = get_category_id(client, registered_test_user_data)
     response = client.post(
         "api/v1/transactions",
@@ -69,5 +71,8 @@ def test_delete_transaction(
         "api/v1/transactions",
         headers=headers,
     ).json()
+    client.delete(
+        f"api/v1/categories/{get_category_id(client, registered_test_user_data)}"
+    )
     assert response.status_code == 204
     assert len(old_transaction_list) - 1 == len(new_transaction_list)
