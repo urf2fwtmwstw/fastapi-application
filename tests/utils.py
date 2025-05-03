@@ -36,20 +36,20 @@ def generate_transaction(client: TestClient, category_id: str) -> dict:
 
 
 def authorize(client: TestClient, user_data: dict[str:str]) -> dict[str:str]:
-    token = client.post("/api/v1/signin", data=user_data).json()
+    token = client.post("api/v1/signin", data=user_data).json()
     return {"Authorization": f"{token['token_type']} {token['access_token']}"}
 
 
-def get_user_id(client: TestClient, user_data: dict[str: str]) -> str:
-    headers: dict[str: str] = authorize(client, user_data)
+def get_user_id(client: TestClient, user_data: dict[str:str]) -> str:
+    headers: dict[str:str] = authorize(client, user_data)
     return client.get(
-        "/api/v1/verify",
+        "api/v1/verify",
         headers=headers,
     ).json()["user_id"]
 
 
 def get_category_id(client: TestClient, user_data: dict) -> str:
-    headers: dict[str: str] = authorize(client, user_data)
+    headers: dict[str:str] = authorize(client, user_data)
     return client.get(
         "api/v1/categories",
         headers=headers,
@@ -57,7 +57,7 @@ def get_category_id(client: TestClient, user_data: dict) -> str:
 
 
 def get_transaction_id(client: TestClient, user_data: dict) -> str:
-    headers: dict[str: str] = authorize(client, user_data)
+    headers: dict[str:str] = authorize(client, user_data)
     return client.get(
         "api/v1/transactions",
         headers=headers,
@@ -69,9 +69,9 @@ def get_report_id(
     registered_test_user_data: dict[str:str],
     report_data: dict[str:int],
 ) -> str:
-    headers: dict[str: str] = authorize(client, registered_test_user_data)
+    headers: dict[str:str] = authorize(client, registered_test_user_data)
     return client.post(
-        "/api/v1/create_report",
+        "api/v1/create_report",
         json=report_data,
         headers=headers,
     ).json()["report_id"]
