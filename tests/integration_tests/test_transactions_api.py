@@ -146,5 +146,7 @@ def test_delete_transaction(
     )
 
     assert response.status_code == 204
-    assert transaction_id not in [transaction["transaction_id"] for transaction in new_transaction_list]
+    assert transaction_id not in [
+        transaction["transaction_id"] for transaction in new_transaction_list
+    ]
     assert len(old_transaction_list) - 1 == len(new_transaction_list)
