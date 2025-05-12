@@ -34,4 +34,4 @@ lint: activate_$(VENV)
 
 test: activate_$(VENV)
 	export PYTHONPATH=$PYTHONPATH:.
-	pytest tests -v
+	pytest tests -vv
