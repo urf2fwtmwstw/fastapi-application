@@ -75,3 +75,23 @@ def get_last_transaction_id(client: TestClient, user_data: dict[str, str]) -> st
         "api/v1/transactions",
         headers=headers,
     ).json()[-1]["transaction_id"]
+
+
+def get_all_transaction_ids(client: TestClient, headers: dict[str, str]) -> list[str]:
+    return [
+        category["transaction_id"]
+        for category in client.get(
+            "api/v1/transactions",
+            headers=headers,
+        ).json()
+    ]
+
+
+def get_all_category_ids(client: TestClient, headers: dict[str, str]) -> list[str]:
+    return [
+        category["category_id"]
+        for category in client.get(
+            "api/v1/categories",
+            headers=headers,
+        ).json()
+    ]
