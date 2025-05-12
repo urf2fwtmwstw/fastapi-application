@@ -24,9 +24,7 @@ def upgrade() -> None:
         "reports",
         sa.Column(
             "status",
-            sa.Enum(
-                "CREATED", "GENERATED", "FAILED", name="reportstatus"
-            ),
+            sa.Enum("CREATED", "GENERATED", "FAILED", name="reportstatus"),
             nullable=False,
         ),
     )
