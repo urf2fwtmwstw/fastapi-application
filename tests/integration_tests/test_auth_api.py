@@ -9,7 +9,9 @@ def test_registration(client: TestClient) -> None:
     assert response.json()["access_token"] is not None
 
 
-def test_authentication(client: TestClient, registered_test_user_data: dict) -> None:
+def test_authentication(
+    client: TestClient, registered_test_user_data: dict[str, str]
+) -> None:
     response = client.post("api/v1/signin", data=registered_test_user_data)
     assert response.status_code == 200
     assert response.json()["access_token"] is not None
@@ -17,9 +19,9 @@ def test_authentication(client: TestClient, registered_test_user_data: dict) -> 
 
 def test_verification(
     client: TestClient,
-    registered_test_user_data: dict[str:str],
+    registered_test_user_data: dict[str, str],
 ) -> None:
-    headers: dict[str:str] = authorize(client, registered_test_user_data)
+    headers: dict[str, str] = authorize(client, registered_test_user_data)
     response = client.get(
         "api/v1/verify",
         headers=headers,
@@ -27,11 +29,14 @@ def test_verification(
     assert response.status_code == 200
 
 
-def test_edit_user(client: TestClient, registered_test_user_data: dict) -> None:
-    new_user_data: dict = generate_user()
+def test_edit_user(
+    client: TestClient,
+    registered_test_user_data: dict[str, str],
+) -> None:
+    new_user_data: dict[str, str] = generate_user()
     new_user_data["old_password"] = "password123"
     new_user_data["new_password"] = new_user_data["password"]
-    recover_user_data: dict = registered_test_user_data
+    recover_user_data: dict[str, str] = registered_test_user_data
     recover_user_data["old_password"] = new_user_data["new_password"]
     recover_user_data["new_password"] = new_user_data["old_password"]
     user_id: str = get_user_id(client, registered_test_user_data)
