@@ -118,7 +118,6 @@ class ReportService:
             expenses_in_category
         )
         balance: float = await self.__get_balance(transactions)
-        balance += month_income - month_expenses
 
         report.month_income = month_income
         report.month_expenses = month_expenses
