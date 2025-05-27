@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from internal.config.config import settings
 from internal.databases.database import get_db
+from internal.schemas.report_schema import ReportCreateSchema
 from internal.services.report_service import ReportService
 
 
@@ -29,10 +30,12 @@ class Consumer:
                     async for db in get_db():
                         await self.report_service.create_report(
                             db,
-                            message["user_id"],
-                            message["report_id"],
-                            message["report_year"],
-                            message["report_month"],
+                            report_data=ReportCreateSchema(
+                                report_id=message["report_id"],
+                                user_id=message["user_id"],
+                                report_year=message["report_year"],
+                                report_month=message["report_month"],
+                            ),
                         )
                 except Exception as e:
                     raise HTTPException(status_code=500, detail=e)
