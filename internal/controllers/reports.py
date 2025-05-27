@@ -3,6 +3,7 @@ import uuid
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from internal.controllers.auth import get_auth_user_info
 from internal.databases.database import get_db
 from internal.reports.repository import ReportsRepository
+from internal.schemas.kafka_message_schema import CreateReportMessage
 from internal.schemas.report_schema import (
     ReportCreateSchema,
     ReportSchema,
@@ -18,8 +20,8 @@ from internal.schemas.user_schema import UserSchema
 from internal.services.report_service import ReportService
 from internal.services.transaction_service import TransactionService
 from internal.transactions.repository import TransactionsRepository
-from internal.transport.report_consumer import ReportConsumer
-from internal.transport.report_producer import ReportProducer
+from internal.transport.consumer import Consumer
+from internal.transport.producer import Producer
 
 resources = {}
 
@@ -37,11 +39,11 @@ async def lifespan(router: APIRouter):
     )
 
     # Initialize Kafka producer and consumer
-    resources["kafka_producer"] = ReportProducer()
+    resources["kafka_producer"] = Producer()
     await resources["kafka_producer"].producer.start()
-    kafka_consumer = ReportConsumer(resources["report_service"])
-    await kafka_consumer.consumer.start()
-    asyncio.create_task(kafka_consumer.consume())
+    kafka_consumer = Consumer(resources["report_service"])
+    await kafka_consumer.report_consumer.start()
+    asyncio.create_task(kafka_consumer.consume_create_report_message())
 
     yield
 
@@ -75,19 +77,18 @@ def get_kafka_producer():
 
 @router.post("/create_report")
 async def create_report(
-        producer: Annotated[ReportProducer, Depends(get_kafka_producer)],
-        background_tasks: BackgroundTasks,
-        report_data: ReportCreateSchema,
-        user: UserSchema = Depends(get_auth_user_info),
-) -> dict[str, str]:
-    report_id = str(uuid.uuid4())
-    message: dict[str, str | int] = {
-        "user_id": str(user.user_id),
-        "report_id": report_id,
-        "report_year": report_data.report_year,
-        "report_month": report_data.report_month,
-    }
-    background_tasks.add_task(producer.produce_kafka_message, message)
+    producer: Annotated[Producer, Depends(get_kafka_producer)],
+    report_data: ReportCreateSchema,
+    user: UserSchema = Depends(get_auth_user_info),
+) -> dict[str, UUID]:
+    report_id = uuid.uuid4()
+    message = CreateReportMessage(
+        user_id=user.user_id,
+        report_id=report_id,
+        report_year=report_data.report_year,
+        report_month=report_data.report_month,
+    )
+    await producer.produce_create_report_message(message)
     return {"report_id": report_id}
 
 
