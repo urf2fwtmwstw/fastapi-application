@@ -69,7 +69,7 @@ def get_report_service():
 def get_kafka_producer():
     kafka_producer = resources.get("kafka_producer", None)
     if kafka_producer is None:
-        raise ModuleNotFoundError('"report_service" was not initialized')
+        raise ModuleNotFoundError('"kafka_producer" was not initialized')
     return kafka_producer
 
 
