@@ -1,0 +1,1 @@
+from internal.transport.report_consumer.report_consumer import Consumer as ReportConsumer

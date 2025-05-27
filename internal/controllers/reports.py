@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from contextlib import asynccontextmanager
 from http import HTTPStatus
@@ -17,12 +18,15 @@ from internal.schemas.user_schema import UserSchema
 from internal.services.report_service import ReportService
 from internal.services.transaction_service import TransactionService
 from internal.transactions.repository import TransactionsRepository
+from internal.transport.report_consumer import ReportConsumer
+from internal.transport.report_producer import ReportProducer
 
 resources = {}
 
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
+    # Initialize repositories and services
     resources["report_repository"] = ReportsRepository()
     resources["transaction_repository"] = TransactionsRepository()
     resources["transaction_service"] = TransactionService(
@@ -31,7 +35,17 @@ async def lifespan(router: APIRouter):
     resources["report_service"] = ReportService(
         resources["report_repository"], resources["transaction_service"]
     )
+
+    # Initialize Kafka producer and consumer
+    resources["kafka_producer"] = ReportProducer()
+    await resources["kafka_producer"].producer.start()
+    kafka_consumer = ReportConsumer(resources["report_service"])
+    await kafka_consumer.consumer.start()
+    asyncio.create_task(kafka_consumer.consume())
+
     yield
+
+    await resources["kafka_producer"].producer.stop()
     resources.clear()
 
 
@@ -52,24 +66,29 @@ def get_report_service():
     return report_service
 
 
+def get_kafka_producer():
+    kafka_producer = resources.get("kafka_producer", None)
+    if kafka_producer is None:
+        raise ModuleNotFoundError('"report_service" was not initialized')
+    return kafka_producer
+
+
 @router.post("/create_report")
 async def create_report(
-    report_data: ReportCreateSchema,
-    background_tasks: BackgroundTasks,
-    service: Annotated[ReportService, Depends(get_report_service)],
-    db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
-    user: UserSchema = Depends(get_auth_user_info),
-) -> dict:
-    report_id = uuid.uuid4()
-    background_tasks.add_task(
-        service.create_report,
-        db,
-        user.user_id,
-        report_id,
-        report_data.report_year,
-        report_data.report_month,
-    )
-    return {"report_id": str(report_id)}
+        producer: Annotated[ReportProducer, Depends(get_kafka_producer)],
+        background_tasks: BackgroundTasks,
+        report_data: ReportCreateSchema,
+        user: UserSchema = Depends(get_auth_user_info),
+) -> dict[str, str]:
+    report_id = str(uuid.uuid4())
+    message: dict[str, str | int] = {
+        "user_id": str(user.user_id),
+        "report_id": report_id,
+        "report_year": report_data.report_year,
+        "report_month": report_data.report_month,
+    }
+    background_tasks.add_task(producer.produce_kafka_message, message)
+    return {"report_id": report_id}
 
 
 @router.get("/get_report", response_model=ReportSchema)
