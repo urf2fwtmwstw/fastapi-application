@@ -4,7 +4,11 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from internal.reports.repository import ReportsRepository
-from internal.schemas.report_schema import ReportSchema, ReportStatus
+from internal.schemas.report_schema import (
+    ReportCreateSchema,
+    ReportSchema,
+    ReportStatus,
+)
 from internal.schemas.transaction_schema import TransactionSchema
 from internal.schemas.user_schema import UserSchema
 from internal.services.transaction_service import TransactionService
@@ -71,20 +75,21 @@ class ReportService:
     async def create_report(
         self,
         session: async_sessionmaker[AsyncSession],
-        user_id: str,
-        report_id: uuid,
-        report_year: int,
-        report_month: int,
+        report_data: ReportCreateSchema,
     ) -> None:
         report = ReportSchema(
-            report_id=report_id,
-            user_id=user_id,
-            report_year_month=str(report_year) + "-" + str(report_month),
+            report_id=report_data.report_id,
+            user_id=uuid.UUID(report_data.user_id),
+            report_year_month=str(report_data.report_year)
+            + "-"
+            + str(report_data.report_month),
             status=ReportStatus.created,
         )
         await self.repo.add_report(session, report)
         try:
-            await self.generate_report(session, report, report_year, report_month)
+            await self.generate_report(
+                session, report, report_data.report_year, report_data.report_month
+            )
         except:
             report.status = ReportStatus.failed
             await self.repo.update_report(session, report)
@@ -96,7 +101,7 @@ class ReportService:
         report_year: int,
         report_month: int,
     ) -> None:
-        user_id = report.user_id
+        user_id = str(report.user_id)
         transactions: list[
             TransactionSchema
         ] = await self.transaction_service.get_transactions(session, user_id)
@@ -138,13 +143,16 @@ class ReportService:
         user_ids: list[str] = [str(user.user_id) for user in users]
 
         for user_id in user_ids:
+            report_data = ReportCreateSchema(
+                user_id=user_id,
+                report_id=uuid.uuid4(),
+                report_year=report_year,
+                report_month=report_month,
+            )
             task = asyncio.create_task(
                 self.create_report(
                     session,
-                    user_id,
-                    uuid.uuid4(),
-                    report_year,
-                    report_month,
+                    report_data,
                 )
             )
             async_tasks.append(task)
