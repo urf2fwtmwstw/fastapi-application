@@ -8,5 +8,5 @@ from internal.schemas.user_schema import UserSchema
 from internal.services.report_service import ReportService
 from internal.services.transaction_service import TransactionService
 from internal.transactions.repository import TransactionsRepository
-from internal.transport.consumer import Consumer
+from internal.transport.consumer import Consumer, KafkaConsumerError
 from internal.transport.producer import Producer

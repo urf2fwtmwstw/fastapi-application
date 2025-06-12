@@ -1,11 +1,19 @@
 import json
 
 from aiokafka import AIOKafkaConsumer
+from aiokafka.errors import KafkaError
 
 from internal.config.config import settings
 from internal.databases.database import get_db
 from internal.schemas.report_schema import ReportCreateSchema
 from internal.services.report_service import ReportService
+
+
+class KafkaConsumerError(Exception):
+    def __init__(self, message: str, error_code: str = "KAFKA_CONSUMER_ERROR"):
+        self.message = message
+        self.error_code = error_code
+        super().__init__(self.message)
 
 
 class Consumer:
@@ -30,7 +38,7 @@ class Consumer:
                             db,
                             report_data=report_data,
                         )
-                except Exception as e:
-                    raise e
+                except KafkaError as e:
+                    raise KafkaConsumerError(f"Kafka consumer failed: {str(e)}")
         finally:
             await self.report_consumer.stop()

@@ -5,12 +5,14 @@ from http import HTTPStatus
 from typing import Annotated
 
 from aiokafka.errors import BrokerNotAvailableError, KafkaError
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app import app
 from dependencies import (
     Consumer,
     CreateReportMessage,
+    KafkaConsumerError,
     Producer,
     ReportCreateSchema,
     ReportSchema,
@@ -21,6 +23,7 @@ from dependencies import (
     UserSchema,
     get_auth_user_info,
     get_db,
+    logger,
 )
 
 resources = {}
@@ -71,6 +74,14 @@ def get_report_service():
     if report_service is None:
         raise ModuleNotFoundError('"report_service" was not initialized')
     return report_service
+
+
+@app.exception_handler(KafkaConsumerError)
+async def kafka_consumer_exception_handler(request, e: KafkaConsumerError):
+    logger.error(f"HTTP exception: {e.message}")
+    return HTTPException(
+        status_code=500, detail={"error": e.error_code, "message": e.message}
+    )
 
 
 @router.post("/create_report")
