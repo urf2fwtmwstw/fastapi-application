@@ -1,7 +1,6 @@
 import json
 
 from aiokafka import AIOKafkaConsumer
-from fastapi import HTTPException
 
 from internal.config.config import settings
 from internal.databases.database import get_db
@@ -12,32 +11,26 @@ from internal.services.report_service import ReportService
 class Consumer:
     def __init__(self, report_service: ReportService):
         self.KAFKA_BOOTSTRAP_SERVERS = settings.KAFKA_URL
-        self.KAFKA_TOPIC = "report_tasks"
-        self.KAFKA_GROUP_ID = "report_consumer_group"
         self.report_service = report_service
         self.report_consumer = AIOKafkaConsumer(
-            self.KAFKA_TOPIC,
+            "report_tasks",
             bootstrap_servers=self.KAFKA_BOOTSTRAP_SERVERS,
-            group_id=self.KAFKA_GROUP_ID,
+            group_id="report_consumer_group",
             auto_offset_reset="earliest",
+            value_deserializer=lambda message: json.loads(message.decode("utf-8")),
         )
 
     async def consume_create_report_message(self):
         try:
-            async for msg in self.report_consumer:
+            async for message in self.report_consumer:
                 try:
-                    message = json.loads(msg.value.decode("utf-8"))
+                    report_data = ReportCreateSchema(**message.value)
                     async for db in get_db():
                         await self.report_service.create_report(
                             db,
-                            report_data=ReportCreateSchema(
-                                report_id=message["report_id"],
-                                user_id=message["user_id"],
-                                report_year=message["report_year"],
-                                report_month=message["report_month"],
-                            ),
+                            report_data=report_data,
                         )
                 except Exception as e:
-                    raise HTTPException(status_code=500, detail=e)
+                    raise e
         finally:
             await self.report_consumer.stop()

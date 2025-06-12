@@ -1,8 +1,8 @@
-from pydantic import UUID4, BaseModel
+from pydantic import BaseModel
 
 
 class CreateReportMessage(BaseModel):
-    report_id: UUID4
-    user_id: UUID4
+    report_id: str
+    user_id: str
     report_year: int
     report_month: int
