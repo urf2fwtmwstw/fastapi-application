@@ -3,31 +3,33 @@ import uuid
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 from typing import Annotated
-from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends
+from aiokafka.errors import BrokerNotAvailableError, KafkaError
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from internal.controllers.auth import get_auth_user_info
-from internal.databases.database import get_db
-from internal.reports.repository import ReportsRepository
-from internal.schemas.kafka_message_schema import CreateReportMessage
-from internal.schemas.report_schema import (
+from dependencies import (
+    Consumer,
+    CreateReportMessage,
+    Producer,
     ReportCreateSchema,
     ReportSchema,
+    ReportService,
+    ReportsRepository,
+    TransactionService,
+    TransactionsRepository,
+    UserSchema,
+    get_auth_user_info,
+    get_db,
 )
-from internal.schemas.user_schema import UserSchema
-from internal.services.report_service import ReportService
-from internal.services.transaction_service import TransactionService
-from internal.transactions.repository import TransactionsRepository
-from internal.transport.consumer import Consumer
-from internal.transport.producer import Producer
 
 resources = {}
+producer: Producer
 
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
+    global producer
     # Initialize repositories and services
     resources["report_repository"] = ReportsRepository()
     resources["transaction_repository"] = TransactionsRepository()
@@ -39,15 +41,18 @@ async def lifespan(router: APIRouter):
     )
 
     # Initialize Kafka producer and consumer
-    resources["kafka_producer"] = Producer()
-    await resources["kafka_producer"].producer.start()
-    kafka_consumer = Consumer(resources["report_service"])
-    await kafka_consumer.report_consumer.start()
-    asyncio.create_task(kafka_consumer.consume_create_report_message())
+    try:
+        producer = Producer()
+        await producer.report_producer.start()
+        kafka_consumer = Consumer(resources["report_service"])
+        await kafka_consumer.report_consumer.start()
+        asyncio.create_task(kafka_consumer.consume_create_report_message())
+    except KafkaError as e:
+        raise BrokerNotAvailableError(e)
 
     yield
 
-    await resources["kafka_producer"].producer.stop()
+    await producer.report_producer.stop()
     resources.clear()
 
 
@@ -68,22 +73,14 @@ def get_report_service():
     return report_service
 
 
-def get_kafka_producer():
-    kafka_producer = resources.get("kafka_producer", None)
-    if kafka_producer is None:
-        raise ModuleNotFoundError('"kafka_producer" was not initialized')
-    return kafka_producer
-
-
 @router.post("/create_report")
 async def create_report(
-    producer: Annotated[Producer, Depends(get_kafka_producer)],
     report_data: ReportCreateSchema,
     user: UserSchema = Depends(get_auth_user_info),
-) -> dict[str, UUID]:
-    report_id = uuid.uuid4()
+) -> dict[str, str]:
+    report_id = str(uuid.uuid4())
     message = CreateReportMessage(
-        user_id=user.user_id,
+        user_id=str(user.user_id),
         report_id=report_id,
         report_year=report_data.report_year,
         report_month=report_data.report_month,
