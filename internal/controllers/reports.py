@@ -5,26 +5,26 @@ from http import HTTPStatus
 from typing import Annotated
 
 from aiokafka.errors import BrokerNotAvailableError, KafkaError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app import app
-from dependencies import (
-    Consumer,
-    CreateReportMessage,
-    KafkaConsumerError,
-    Producer,
+from internal.controllers.auth import get_auth_user_info
+from internal.databases.database import get_db
+from internal.logger.logger import logger
+from internal.reports.repository import ReportsRepository
+from internal.schemas.kafka_message_schema import KafkaFillReportMessage
+from internal.schemas.report_schema import (
+    BlankReportSchema,
     ReportCreateSchema,
     ReportSchema,
-    ReportService,
-    ReportsRepository,
-    TransactionService,
-    TransactionsRepository,
-    UserSchema,
-    get_auth_user_info,
-    get_db,
-    logger,
 )
+from internal.schemas.user_schema import UserSchema
+from internal.services.report_service import ReportService
+from internal.services.transaction_service import TransactionService
+from internal.transactions.repository import TransactionsRepository
+from internal.transport.consumer import Consumer
+from internal.transport.producer import KafkaProducerError, Producer
 
 resources = {}
 producer: Producer
