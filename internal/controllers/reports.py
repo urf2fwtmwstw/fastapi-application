@@ -76,11 +76,12 @@ def get_report_service():
     return report_service
 
 
-@app.exception_handler(KafkaConsumerError)
-async def kafka_consumer_exception_handler(request, e: KafkaConsumerError):
+@app.exception_handler(KafkaProducerError)
+async def kafka_consumer_exception_handler(request, e: KafkaProducerError):
     logger.error(f"HTTP exception: {e.message}")
     return HTTPException(
-        status_code=500, detail={"error": e.error_code, "message": e.message}
+        status_code=500,
+        detail={"error": e.error_code, "message": e.message},
     )
 
 

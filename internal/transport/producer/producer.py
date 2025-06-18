@@ -2,10 +2,16 @@ import json
 
 from aiokafka import AIOKafkaProducer
 from aiokafka.errors import KafkaError
-from fastapi import HTTPException
 
 from internal.config.config import settings
-from internal.schemas.kafka_message_schema import CreateReportMessage
+from internal.schemas.kafka_message_schema import KafkaFillReportMessage
+
+
+class KafkaProducerError(Exception):
+    def __init__(self, message: str, error_code: str = "KAFKA_PRODUCER_ERROR"):
+        self.message = message
+        self.error_code = error_code
+        super().__init__(self.message)
 
 
 class Producer:
@@ -22,4 +28,4 @@ class Producer:
                 message.model_dump(),
             )
         except KafkaError as e:
-            raise HTTPException(status_code=500, detail=e)
+            raise KafkaProducerError(f"Kafka producer failed: {str(e)}")
