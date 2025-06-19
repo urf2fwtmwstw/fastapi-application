@@ -23,6 +23,21 @@ class ReportsRepository:
             await session.commit()
 
     @staticmethod
+    async def get_created_reports(
+        async_session: async_sessionmaker[AsyncSession],
+    ) -> list[ReportSchema]:
+        async with async_session() as session:
+            statement = select(ReportModel).filter(
+                ReportModel.status == ReportStatus.created
+            )
+            result = await session.execute(statement)
+            created_reports: list[ReportSchema] = [
+                ReportSchema.model_validate(created_report)
+                for created_report in result.scalars()
+            ]
+            return created_reports
+
+    @staticmethod
     async def get_report(
         async_session: async_sessionmaker[AsyncSession],
         report_id: str,

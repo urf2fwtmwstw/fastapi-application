@@ -140,14 +140,12 @@ class ReportService:
     ) -> None:
         async_tasks = []
         users: list[UserSchema] = await self.user_service.get_users(session)
-        user_ids: list[str] = [str(user.user_id) for user in users]
 
-        for user_id in user_ids:
-            report_data = ReportCreateSchema(
-                user_id=user_id,
+        for user in users:
+            report_data = BlankReportSchema(
+                user_id=user.user_id,
                 report_id=uuid.uuid4(),
-                report_year=report_year,
-                report_month=report_month,
+                report_year_month=str(report_year) + "-" + str(report_month),
             )
             task = asyncio.create_task(
                 self.create_report(
@@ -156,6 +154,7 @@ class ReportService:
                 )
             )
             async_tasks.append(task)
+        await asyncio.gather(*async_tasks)
 
         await asyncio.gather(*async_tasks)
 

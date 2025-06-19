@@ -1,4 +1,3 @@
-import asyncio
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
@@ -17,24 +16,24 @@ from internal.transactions.repository import TransactionsRepository
 resources = {}
 jobstores = {"default": MemoryJobStore()}
 scheduler = AsyncIOScheduler(jobstores=jobstores, timezone=UTC)
+report_service = ReportService(
+    ReportsRepository(),
+    TransactionService(TransactionsRepository()),
+    UserService(UsersRepository()),
+)
 
 
 @scheduler.scheduled_job("cron", day=1, hour=0, minute=0, second=0)
-async def generate_reports(
-    service=ReportService(
-        ReportsRepository(),
-        TransactionService(TransactionsRepository()),
-        UserService(UsersRepository()),
-    ),
-):
+async def create_reports(service=report_service):
     date = datetime.now(tz=UTC)
     if date.month != 1:
         month = date.month - 1
+        year = date.year
     else:
         month = 12
         year = date.year - 1
     async for db in get_db():
-        asyncio.run(await service.async_report_generation(db, year, month))
+        await service.async_report_generation(db, year, month)
 
 
 # OS signals handling
