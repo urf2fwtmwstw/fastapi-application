@@ -21,11 +21,13 @@ class Producer:
             value_serializer=lambda message: json.dumps(message).encode("utf-8"),
         )
 
-    async def produce_create_report_message(self, message: CreateReportMessage) -> None:
+    async def produce_create_report_message(
+        self, message: KafkaFillReportMessage
+    ) -> None:
         try:
             await self.report_producer.send(
                 "report_tasks",
-                message.model_dump(),
+                {"report_id": str(message.report_id)},
             )
         except KafkaError as e:
             raise KafkaProducerError(f"Kafka producer failed: {str(e)}")

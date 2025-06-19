@@ -1,20 +1,21 @@
+import uuid
 from typing import Annotated
-from uuid import uuid4
+from uuid import UUID as USERID
 
 from annotated_types import MaxLen, MinLen
-from pydantic import UUID4, BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 
 class UserSchema(BaseModel):
     model_config = ConfigDict(strict=True)
 
-    user_id: UUID4
+    user_id: USERID
     username: str
     hashed_password: str
 
 
 class UserCreateSchema(BaseModel):
-    user_id: UUID4 = uuid4()
+    user_id: USERID = uuid.uuid4()
     username: Annotated[str, MinLen(3), MaxLen(20)]
     password: str
 

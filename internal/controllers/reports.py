@@ -88,17 +88,22 @@ async def kafka_consumer_exception_handler(request, e: KafkaProducerError):
 @router.post("/create_report")
 async def create_report(
     report_data: ReportCreateSchema,
+    service: Annotated[ReportService, Depends(get_report_service)],
+    db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
+    background_tasks: BackgroundTasks,
     user: UserSchema = Depends(get_auth_user_info),
 ) -> dict[str, str]:
-    report_id = str(uuid.uuid4())
-    message = CreateReportMessage(
-        user_id=str(user.user_id),
-        report_id=report_id,
-        report_year=report_data.report_year,
-        report_month=report_data.report_month,
+    blank_report = BlankReportSchema(
+        report_id=uuid.uuid4(),
+        user_id=user.user_id,
+        report_year_month=str(report_data.report_year)
+        + "-"
+        + str(report_data.report_month),
     )
-    await producer.produce_create_report_message(message)
-    return {"report_id": report_id}
+    kafka_message = KafkaFillReportMessage(report_id=blank_report.report_id)
+    await service.create_report(db, blank_report)
+    background_tasks.add_task(producer.produce_create_report_message, kafka_message)
+    return {"report_id": str(blank_report.report_id)}
 
 
 @router.get("/get_report", response_model=ReportSchema)

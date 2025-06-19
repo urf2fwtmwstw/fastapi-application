@@ -5,7 +5,7 @@ from aiokafka.errors import KafkaError
 
 from internal.config.config import settings
 from internal.databases.database import get_db
-from internal.schemas.report_schema import ReportCreateSchema
+from internal.schemas.kafka_message_schema import KafkaFillReportMessage
 from internal.services.report_service import ReportService
 
 
@@ -32,11 +32,11 @@ class Consumer:
         try:
             async for message in self.report_consumer:
                 try:
-                    report_data = ReportCreateSchema(**message.value)
+                    report_data = KafkaFillReportMessage(**message.value)
                     async for db in get_db():
-                        await self.report_service.create_report(
+                        await self.report_service.fill_report(
                             db,
-                            report_data=report_data,
+                            report_data.report_id,
                         )
                 except KafkaError as e:
                     raise KafkaConsumerError(f"Kafka consumer failed: {str(e)}")

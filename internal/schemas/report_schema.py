@@ -1,8 +1,10 @@
 from datetime import datetime
 from enum import Enum
-from uuid import UUID
+from uuid import UUID as REPORTID
 
 from pydantic import BaseModel, ConfigDict
+
+from internal.schemas.user_schema import USERID
 
 
 class ReportStatus(str, Enum):
@@ -11,22 +13,27 @@ class ReportStatus(str, Enum):
     failed = "FAILED"
 
 
-class ReportSchema(BaseModel):
-    report_id: UUID
-    report_created: datetime | None = None
+class ReportCreateSchema(BaseModel):
+    report_year: int
+    report_month: int
+
+
+class BlankReportSchema(BaseModel):
+    report_id: REPORTID
+    user_id: USERID
     report_year_month: str
-    month_income: float | None = None
-    month_expenses: float | None = None
-    balance: float | None = None
-    most_expensive_categories: str | None = None
-    user_id: UUID
+    status: ReportStatus = ReportStatus.created
+
+
+class ReportSchema(BaseModel):
+    report_id: REPORTID
+    report_created: datetime | None
+    report_year_month: str
+    month_income: float | None
+    month_expenses: float | None
+    balance: float | None
+    most_expensive_categories: str | None
+    user_id: USERID
     status: ReportStatus
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class ReportCreateSchema(BaseModel):
-    report_id: UUID | None = None
-    user_id: str | None = None
-    report_year: int
-    report_month: int

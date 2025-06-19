@@ -1,8 +1,7 @@
 from pydantic import BaseModel
 
+from internal.schemas.report_schema import REPORTID
 
-class CreateReportMessage(BaseModel):
-    report_id: str
-    user_id: str
-    report_year: int
-    report_month: int
+
+class KafkaFillReportMessage(BaseModel):
+    report_id: REPORTID
