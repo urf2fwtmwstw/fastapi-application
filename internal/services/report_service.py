@@ -156,6 +156,22 @@ class ReportService:
             async_tasks.append(task)
         await asyncio.gather(*async_tasks)
 
+    async def fill_created_reports(
+        self,
+        session: async_sessionmaker[AsyncSession],
+    ) -> None:
+        async_tasks = []
+        created_reports: list[ReportSchema] = await self.repo.get_created_reports(
+            session
+        )
+        for report in created_reports:
+            task = asyncio.create_task(
+                self.fill_report(
+                    session,
+                    str(report.report_id),
+                ),
+            )
+            async_tasks.append(task)
         await asyncio.gather(*async_tasks)
 
     async def get_report(

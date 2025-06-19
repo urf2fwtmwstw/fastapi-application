@@ -36,6 +36,12 @@ async def create_reports(service=report_service):
         await service.async_report_generation(db, year, month)
 
 
+@scheduler.scheduled_job("cron", minute="*/1")
+async def fill_created_reports(service=report_service):
+    async for db in get_db():
+        await service.fill_created_reports(db)
+
+
 # OS signals handling
 @asynccontextmanager
 async def lifespan(app: FastAPI):
