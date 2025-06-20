@@ -24,16 +24,14 @@ from internal.transport.consumer import Consumer
 from internal.transport.producer import KafkaProducerError, Producer
 
 resources = {}
-producer: Producer
-
 
 @asynccontextmanager
 async def lifespan(router: APIRouter):
     # Initialize Kafka producer and consumer
-    global producer
     try:
         producer = Producer()
         await producer.report_producer.start()
+        resources["kafka_producer"] = producer
         kafka_consumer = Consumer(app.resources["services"]["report_service"])
         await kafka_consumer.report_consumer.start()
         asyncio.create_task(kafka_consumer.consume_create_report_message())
@@ -56,6 +54,12 @@ def get_report_service() -> ReportService:
     return report_service
 
 
+def get_kafka_producer() -> Producer:
+    kafka_producer = resources.get("kafka_producer", None)
+    if kafka_producer is None:
+        raise ModuleNotFoundError('"kafka_producer" was not initialized')
+    return kafka_producer
+
 @app.app.exception_handler(KafkaProducerError)
 async def kafka_consumer_exception_handler(request: Request, e: KafkaProducerError):
     logger.error(f"HTTP exception: {e.message}")
@@ -69,6 +73,7 @@ async def kafka_consumer_exception_handler(request: Request, e: KafkaProducerErr
 async def create_report(
     report_data: ReportCreateSchema,
     service: Annotated[ReportService, Depends(get_report_service)],
+    producer: Annotated[Producer, Depends(get_kafka_producer)],
     db: Annotated[async_sessionmaker[AsyncSession], Depends(get_db)],
     background_tasks: BackgroundTasks,
     user: UserSchema = Depends(get_auth_user_info),
