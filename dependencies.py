@@ -15,34 +15,30 @@ async def get_dependency(dependency_name: str, resource):
     return dependency
 
 
-async def initialize_repositories():
-    repositories = {}
-    repositories["user_repository"] = UsersRepository()
-    repositories["category_repository"] = CategoriesRepository()
-    repositories["transaction_repository"] = TransactionsRepository()
-    repositories["report_repository"] = ReportsRepository()
-    return repositories
+async def initialize_repositories(resources) -> None:
+    resources["user_repository"] = UsersRepository()
+    resources["category_repository"] = CategoriesRepository()
+    resources["transaction_repository"] = TransactionsRepository()
+    resources["report_repository"] = ReportsRepository()
 
 
-async def initialize_services(resources):
-    services = {}
-    services["user_service"] = UserService(
-        await get_dependency("user_repository", resources["repositories"])
+async def initialize_services(resources) -> None:
+    resources["user_service"] = UserService(
+        await get_dependency("user_repository", resources)
     )
-    services["category_service"] = CategoryService(
-        await get_dependency("category_repository", resources["repositories"])
+    resources["category_service"] = CategoryService(
+        await get_dependency("category_repository", resources)
     )
-    services["transaction_service"] = TransactionService(
-        await get_dependency("transaction_repository", resources["repositories"])
+    resources["transaction_service"] = TransactionService(
+        await get_dependency("transaction_repository", resources)
     )
-    services["report_service"] = ReportService(
-        await get_dependency("report_repository", resources["repositories"]),
-        await get_dependency("transaction_service", services),
-        await get_dependency("user_service", services),
+    resources["report_service"] = ReportService(
+        await get_dependency("report_repository", resources),
+        await get_dependency("transaction_service", resources),
+        await get_dependency("user_service", resources),
     )
-    return services
 
 
 async def initialize_dependencies(resources) -> None:
-    resources["repositories"] = await initialize_repositories()
-    resources["services"] = await initialize_services(resources)
+    await initialize_repositories(resources)
+    await initialize_services(resources)

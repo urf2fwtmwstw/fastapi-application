@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     await initialize_dependencies(resources)
     jobstores = {"default": MemoryJobStore()}
     scheduler = AsyncIOScheduler(jobstores=jobstores, timezone=UTC)
-    await create_scheduled_jobs(scheduler, await get_dependency("report_service", resources["services"]))
+    await create_scheduled_jobs(scheduler, await get_dependency("report_service", resources))
     resources["message"] = "Initialized"
     scheduler.start()
     yield

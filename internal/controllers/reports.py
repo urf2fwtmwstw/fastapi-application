@@ -32,7 +32,7 @@ async def lifespan(router: APIRouter):
         producer = Producer()
         await producer.report_producer.start()
         resources["kafka_producer"] = producer
-        kafka_consumer = Consumer(app.resources["services"]["report_service"])
+        kafka_consumer = Consumer(app.resources["report_service"])
         await kafka_consumer.report_consumer.start()
         asyncio.create_task(kafka_consumer.consume_create_report_message())
     except KafkaError as e:
@@ -48,7 +48,7 @@ router = APIRouter(lifespan=lifespan)
 
 
 def get_report_service() -> ReportService:
-    report_service = app.resources["services"].get("report_service", None)
+    report_service = app.resources.get("report_service", None)
     if report_service is None:
         raise ModuleNotFoundError('"report_service" was not initialized')
     return report_service
